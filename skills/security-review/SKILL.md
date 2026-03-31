@@ -1,21 +1,21 @@
 ---
 name: security-review
-description: Use this skill when adding authentication, handling user input, working with secrets, creating API endpoints, or implementing payment/sensitive features. Provides comprehensive security checklist and patterns.
+description: 在实现鉴权、处理用户输入、接触 secrets、创建 API、支付或其他敏感功能时使用。提供完整安全检查清单与推荐模式。
 ---
 
 # Security Review Skill
 
-This skill ensures all code follows security best practices and identifies potential vulnerabilities.
+这个 skill 用来确保代码遵循安全最佳实践，并主动识别潜在漏洞。
 
 ## When to Activate
 
-- Implementing authentication or authorization
-- Handling user input or file uploads
-- Creating new API endpoints
-- Working with secrets or credentials
-- Implementing payment features
-- Storing or transmitting sensitive data
-- Integrating third-party APIs
+- 实现认证或授权逻辑
+- 处理用户输入或文件上传
+- 新增 API 端点
+- 使用 secrets / credentials
+- 支付、账务、交易相关功能
+- 存储或传输敏感数据
+- 集成第三方 API
 
 ## Security Checklist
 
@@ -23,8 +23,8 @@ This skill ensures all code follows security best practices and identifies poten
 
 #### ❌ NEVER Do This
 ```typescript
-const apiKey = "sk-proj-xxxxx"  // Hardcoded secret
-const dbPassword = "password123" // In source code
+const apiKey = "sk-proj-xxxxx"
+const dbPassword = "password123"
 ```
 
 #### ✅ ALWAYS Do This
@@ -32,97 +32,53 @@ const dbPassword = "password123" // In source code
 const apiKey = process.env.OPENAI_API_KEY
 const dbUrl = process.env.DATABASE_URL
 
-// Verify secrets exist
 if (!apiKey) {
   throw new Error('OPENAI_API_KEY not configured')
 }
 ```
 
 #### Verification Steps
-- [ ] No hardcoded API keys, tokens, or passwords
-- [ ] All secrets in environment variables
-- [ ] `.env.local` in .gitignore
-- [ ] No secrets in git history
-- [ ] Production secrets in hosting platform (Vercel, Railway)
+- [ ] 没有硬编码 key / token / password
+- [ ] secrets 全部来自环境变量
+- [ ] `.env.local` 已加入 `.gitignore`
+- [ ] git 历史中没有泄露
+- [ ] 生产 secrets 仅存放在托管平台
 
 ### 2. Input Validation
 
 #### Always Validate User Input
 ```typescript
-import { z } from 'zod'
-
-// Define validation schema
 const CreateUserSchema = z.object({
   email: z.string().email(),
   name: z.string().min(1).max(100),
-  age: z.number().int().min(0).max(150)
+  age: z.number().int().min(0).max(150),
 })
-
-// Validate before processing
-export async function createUser(input: unknown) {
-  try {
-    const validated = CreateUserSchema.parse(input)
-    return await db.users.create(validated)
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return { success: false, errors: error.errors }
-    }
-    throw error
-  }
-}
 ```
 
 #### File Upload Validation
 ```typescript
 function validateFileUpload(file: File) {
-  // Size check (5MB max)
   const maxSize = 5 * 1024 * 1024
-  if (file.size > maxSize) {
-    throw new Error('File too large (max 5MB)')
-  }
-
-  // Type check
-  const allowedTypes = ['image/jpeg', 'image/png', 'image/gif']
-  if (!allowedTypes.includes(file.type)) {
-    throw new Error('Invalid file type')
-  }
-
-  // Extension check
-  const allowedExtensions = ['.jpg', '.jpeg', '.png', '.gif']
-  const extension = file.name.toLowerCase().match(/\.[^.]+$/)?.[0]
-  if (!extension || !allowedExtensions.includes(extension)) {
-    throw new Error('Invalid file extension')
-  }
-
-  return true
+  if (file.size > maxSize) throw new Error('File too large')
 }
 ```
 
 #### Verification Steps
-- [ ] All user inputs validated with schemas
-- [ ] File uploads restricted (size, type, extension)
-- [ ] No direct use of user input in queries
-- [ ] Whitelist validation (not blacklist)
-- [ ] Error messages don't leak sensitive info
+- [ ] 所有输入都用 schema 校验
+- [ ] 文件上传受大小 / 类型 / 扩展名限制
+- [ ] 不直接把用户输入放进查询或命令
+- [ ] 优先白名单校验
+- [ ] 错误消息不泄露内部细节
 
 ### 3. SQL Injection Prevention
 
 #### ❌ NEVER Concatenate SQL
 ```typescript
-// DANGEROUS - SQL Injection vulnerability
 const query = `SELECT * FROM users WHERE email = '${userEmail}'`
-await db.query(query)
 ```
 
 #### ✅ ALWAYS Use Parameterized Queries
 ```typescript
-// Safe - parameterized query
-const { data } = await supabase
-  .from('users')
-  .select('*')
-  .eq('email', userEmail)
-
-// Or with raw SQL
 await db.query(
   'SELECT * FROM users WHERE email = $1',
   [userEmail]
@@ -130,365 +86,140 @@ await db.query(
 ```
 
 #### Verification Steps
-- [ ] All database queries use parameterized queries
-- [ ] No string concatenation in SQL
-- [ ] ORM/query builder used correctly
-- [ ] Supabase queries properly sanitized
+- [ ] 所有查询使用参数化方式
+- [ ] 没有 SQL 字符串拼接
+- [ ] ORM / query builder 使用正确
 
 ### 4. Authentication & Authorization
 
 #### JWT Token Handling
-```typescript
-// ❌ WRONG: localStorage (vulnerable to XSS)
-localStorage.setItem('token', token)
-
-// ✅ CORRECT: httpOnly cookies
-res.setHeader('Set-Cookie',
-  `token=${token}; HttpOnly; Secure; SameSite=Strict; Max-Age=3600`)
-```
+- 不把敏感 token 直接放在脆弱存储中
+- 校验签名、过期时间、issuer / audience
 
 #### Authorization Checks
-```typescript
-export async function deleteUser(userId: string, requesterId: string) {
-  // ALWAYS verify authorization first
-  const requester = await db.users.findUnique({
-    where: { id: requesterId }
-  })
-
-  if (requester.role !== 'admin') {
-    return NextResponse.json(
-      { error: 'Unauthorized' },
-      { status: 403 }
-    )
-  }
-
-  // Proceed with deletion
-  await db.users.delete({ where: { id: userId } })
-}
-```
+- 每个敏感路由都检查权限
+- 不只判断“是否登录”，还要判断“是否有权访问该资源”
 
 #### Row Level Security (Supabase)
-```sql
--- Enable RLS on all tables
-ALTER TABLE users ENABLE ROW LEVEL SECURITY;
-
--- Users can only view their own data
-CREATE POLICY "Users view own data"
-  ON users FOR SELECT
-  USING (auth.uid() = id);
-
--- Users can only update their own data
-CREATE POLICY "Users update own data"
-  ON users FOR UPDATE
-  USING (auth.uid() = id);
-```
+- 生产环境默认启用 RLS
+- 策略基于用户身份和资源归属
 
 #### Verification Steps
-- [ ] Tokens stored in httpOnly cookies (not localStorage)
-- [ ] Authorization checks before sensitive operations
-- [ ] Row Level Security enabled in Supabase
-- [ ] Role-based access control implemented
-- [ ] Session management secure
+- [ ] 鉴权逻辑正确
+- [ ] 授权逻辑逐路由检查
+- [ ] 没有越权读写
 
 ### 5. XSS Prevention
 
 #### Sanitize HTML
-```typescript
-import DOMPurify from 'isomorphic-dompurify'
-
-// ALWAYS sanitize user-provided HTML
-function renderUserContent(html: string) {
-  const clean = DOMPurify.sanitize(html, {
-    ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'p'],
-    ALLOWED_ATTR: []
-  })
-  return <div dangerouslySetInnerHTML={{ __html: clean }} />
-}
-```
+- 渲染用户内容前进行清洗
+- 对 `dangerouslySetInnerHTML` 保持零信任
 
 #### Content Security Policy
-```typescript
-// next.config.js
-const securityHeaders = [
-  {
-    key: 'Content-Security-Policy',
-    value: `
-      default-src 'self';
-      script-src 'self' 'unsafe-eval' 'unsafe-inline';
-      style-src 'self' 'unsafe-inline';
-      img-src 'self' data: https:;
-      font-src 'self';
-      connect-src 'self' https://api.example.com;
-    `.replace(/\s{2,}/g, ' ').trim()
-  }
-]
-```
+- 配置 CSP，限制脚本来源
 
 #### Verification Steps
-- [ ] User-provided HTML sanitized
-- [ ] CSP headers configured
-- [ ] No unvalidated dynamic content rendering
-- [ ] React's built-in XSS protection used
+- [ ] 输出已转义或清洗
+- [ ] 无不受控 HTML 注入
+- [ ] CSP 已配置
 
 ### 6. CSRF Protection
 
 #### CSRF Tokens
-```typescript
-import { csrf } from '@/lib/csrf'
-
-export async function POST(request: Request) {
-  const token = request.headers.get('X-CSRF-Token')
-
-  if (!csrf.verify(token)) {
-    return NextResponse.json(
-      { error: 'Invalid CSRF token' },
-      { status: 403 }
-    )
-  }
-
-  // Process request
-}
-```
+- 对敏感写操作考虑 token 方案
 
 #### SameSite Cookies
-```typescript
-res.setHeader('Set-Cookie',
-  `session=${sessionId}; HttpOnly; Secure; SameSite=Strict`)
-```
+- 默认使用更严格的 cookie 策略
 
 #### Verification Steps
-- [ ] CSRF tokens on state-changing operations
-- [ ] SameSite=Strict on all cookies
-- [ ] Double-submit cookie pattern implemented
+- [ ] 跨站请求具备防护
+- [ ] cookie 属性设置合理
 
 ### 7. Rate Limiting
 
 #### API Rate Limiting
-```typescript
-import rateLimit from 'express-rate-limit'
-
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // 100 requests per window
-  message: 'Too many requests'
-})
-
-// Apply to routes
-app.use('/api/', limiter)
-```
+- 登录、注册、密码重置、导出等接口必须限流
 
 #### Expensive Operations
-```typescript
-// Aggressive rate limiting for searches
-const searchLimiter = rateLimit({
-  windowMs: 60 * 1000, // 1 minute
-  max: 10, // 10 requests per minute
-  message: 'Too many search requests'
-})
-
-app.use('/api/search', searchLimiter)
-```
+- AI 请求、支付、批量任务等高成本操作要额外限制
 
 #### Verification Steps
-- [ ] Rate limiting on all API endpoints
-- [ ] Stricter limits on expensive operations
-- [ ] IP-based rate limiting
-- [ ] User-based rate limiting (authenticated)
+- [ ] 高风险端点有限流
+- [ ] 有滥用防护
 
 ### 8. Sensitive Data Exposure
 
 #### Logging
-```typescript
-// ❌ WRONG: Logging sensitive data
-console.log('User login:', { email, password })
-console.log('Payment:', { cardNumber, cvv })
-
-// ✅ CORRECT: Redact sensitive data
-console.log('User login:', { email, userId })
-console.log('Payment:', { last4: card.last4, userId })
-```
+- 不记录 token、密码、私钥、支付信息
 
 #### Error Messages
-```typescript
-// ❌ WRONG: Exposing internal details
-catch (error) {
-  return NextResponse.json(
-    { error: error.message, stack: error.stack },
-    { status: 500 }
-  )
-}
-
-// ✅ CORRECT: Generic error messages
-catch (error) {
-  console.error('Internal error:', error)
-  return NextResponse.json(
-    { error: 'An error occurred. Please try again.' },
-    { status: 500 }
-  )
-}
-```
+- 不向前端暴露内部实现与栈信息
 
 #### Verification Steps
-- [ ] No passwords, tokens, or secrets in logs
-- [ ] Error messages generic for users
-- [ ] Detailed errors only in server logs
-- [ ] No stack traces exposed to users
+- [ ] 日志已脱敏
+- [ ] 错误输出安全
 
 ### 9. Blockchain Security (Solana)
 
 #### Wallet Verification
-```typescript
-import { verify } from '@solana/web3.js'
-
-async function verifyWalletOwnership(
-  publicKey: string,
-  signature: string,
-  message: string
-) {
-  try {
-    const isValid = verify(
-      Buffer.from(message),
-      Buffer.from(signature, 'base64'),
-      Buffer.from(publicKey, 'base64')
-    )
-    return isValid
-  } catch (error) {
-    return false
-  }
-}
-```
+- 验证签名与钱包归属
 
 #### Transaction Verification
-```typescript
-async function verifyTransaction(transaction: Transaction) {
-  // Verify recipient
-  if (transaction.to !== expectedRecipient) {
-    throw new Error('Invalid recipient')
-  }
-
-  // Verify amount
-  if (transaction.amount > maxAmount) {
-    throw new Error('Amount exceeds limit')
-  }
-
-  // Verify user has sufficient balance
-  const balance = await getBalance(transaction.from)
-  if (balance < transaction.amount) {
-    throw new Error('Insufficient balance')
-  }
-
-  return true
-}
-```
+- 链上状态必须二次确认，不信任客户端回传结果
 
 #### Verification Steps
-- [ ] Wallet signatures verified
-- [ ] Transaction details validated
-- [ ] Balance checks before transactions
-- [ ] No blind transaction signing
+- [ ] 签名验证到位
+- [ ] 交易状态有后端确认
 
 ### 10. Dependency Security
 
 #### Regular Updates
+
 ```bash
-# Check for vulnerabilities
+# 检查漏洞
 npm audit
 
-# Fix automatically fixable issues
+# 自动修复可修问题
 npm audit fix
 
-# Update dependencies
-npm update
-
-# Check for outdated packages
+# 检查过期包
 npm outdated
 ```
 
 #### Lock Files
-```bash
-# ALWAYS commit lock files
-git add package-lock.json
 
-# Use in CI/CD for reproducible builds
-npm ci  # Instead of npm install
+```bash
+# lock file 必须提交
 ```
 
 #### Verification Steps
-- [ ] Dependencies up to date
-- [ ] No known vulnerabilities (npm audit clean)
-- [ ] Lock files committed
-- [ ] Dependabot enabled on GitHub
-- [ ] Regular security updates
+- [ ] 无高危依赖漏洞
+- [ ] lock file 已提交
+- [ ] 依赖更新有验证
 
 ## Security Testing
 
 ### Automated Security Tests
-```typescript
-// Test authentication
-test('requires authentication', async () => {
-  const response = await fetch('/api/protected')
-  expect(response.status).toBe(401)
-})
-
-// Test authorization
-test('requires admin role', async () => {
-  const response = await fetch('/api/admin', {
-    headers: { Authorization: `Bearer ${userToken}` }
-  })
-  expect(response.status).toBe(403)
-})
-
-// Test input validation
-test('rejects invalid input', async () => {
-  const response = await fetch('/api/users', {
-    method: 'POST',
-    body: JSON.stringify({ email: 'not-an-email' })
-  })
-  expect(response.status).toBe(400)
-})
-
-// Test rate limiting
-test('enforces rate limits', async () => {
-  const requests = Array(101).fill(null).map(() =>
-    fetch('/api/endpoint')
-  )
-
-  const responses = await Promise.all(requests)
-  const tooManyRequests = responses.filter(r => r.status === 429)
-
-  expect(tooManyRequests.length).toBeGreaterThan(0)
-})
-```
+- 依赖审计
+- secrets 扫描
+- 关键输入的 schema 测试
+- 权限边界测试
 
 ## Pre-Deployment Security Checklist
 
-Before ANY production deployment:
-
-- [ ] **Secrets**: No hardcoded secrets, all in env vars
-- [ ] **Input Validation**: All user inputs validated
-- [ ] **SQL Injection**: All queries parameterized
-- [ ] **XSS**: User content sanitized
-- [ ] **CSRF**: Protection enabled
-- [ ] **Authentication**: Proper token handling
-- [ ] **Authorization**: Role checks in place
-- [ ] **Rate Limiting**: Enabled on all endpoints
-- [ ] **HTTPS**: Enforced in production
-- [ ] **Security Headers**: CSP, X-Frame-Options configured
-- [ ] **Error Handling**: No sensitive data in errors
-- [ ] **Logging**: No sensitive data logged
-- [ ] **Dependencies**: Up to date, no vulnerabilities
-- [ ] **Row Level Security**: Enabled in Supabase
-- [ ] **CORS**: Properly configured
-- [ ] **File Uploads**: Validated (size, type)
-- [ ] **Wallet Signatures**: Verified (if blockchain)
+- [ ] secrets 管理正确
+- [ ] 输入校验完成
+- [ ] 鉴权 / 授权验证完成
+- [ ] 关键路由有限流
+- [ ] 日志与错误输出已脱敏
 
 ## Resources
 
-- [OWASP Top 10](https://owasp.org/www-project-top-ten/)
-- [Next.js Security](https://nextjs.org/docs/security)
-- [Supabase Security](https://supabase.com/docs/guides/auth)
-- [Web Security Academy](https://portswigger.net/web-security)
+- OWASP Top 10
+- Supabase RLS 文档
+- Zod / Valibot 输入校验文档
+- 平台托管服务的 secrets 管理文档
 
 ---
 
-**Remember**: Security is not optional. One vulnerability can compromise the entire platform. When in doubt, err on the side of caution.
+**原则**：所有外部输入默认不可信，所有敏感能力默认不开放，所有 secrets 默认不允许进入仓库。

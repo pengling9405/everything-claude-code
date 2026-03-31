@@ -1,31 +1,31 @@
 # Update Documentation
 
-Sync documentation from source-of-truth:
+根据单一事实来源同步文档：
 
-1. Read package.json scripts section
-   - Generate scripts reference table
-   - Include descriptions from comments
+1. 读取 `package.json` 的 scripts 区段
+   - 生成脚本参考表
+   - 如果有注释，包含脚本说明
 
-2. Read .env.example
-   - Extract all environment variables
-   - Document purpose and format
+2. 读取 `.env.example`
+   - 提取所有环境变量
+   - 记录用途与格式
 
-3. Generate docs/CONTRIB.md with:
-   - Development workflow
-   - Available scripts
-   - Environment setup
-   - Testing procedures
+3. 生成 `docs/CONTRIB.md`，内容包括：
+   - 开发工作流
+   - 可用脚本
+   - 环境配置
+   - 测试流程
 
-4. Generate docs/RUNBOOK.md with:
-   - Deployment procedures
-   - Monitoring and alerts
-   - Common issues and fixes
-   - Rollback procedures
+4. 生成 `docs/RUNBOOK.md`，内容包括：
+   - 部署流程
+   - 监控与告警
+   - 常见问题与修复
+   - 回滚流程
 
-5. Identify obsolete documentation:
-   - Find docs not modified in 90+ days
-   - List for manual review
+5. 识别过期文档：
+   - 找出 90 天以上未更新的文档
+   - 列表输出供人工审查
 
-6. Show diff summary
+6. 输出 diff 摘要
 
-Single source of truth: package.json and .env.example
+单一事实来源是：`package.json` 与 `.env.example`

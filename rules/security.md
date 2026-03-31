@@ -1,18 +1,18 @@
 # Security Guidelines
 
-## Mandatory Security Checks
+## 强制安全检查
 
-Before ANY commit:
-- [ ] No hardcoded secrets (API keys, passwords, tokens)
-- [ ] All user inputs validated
-- [ ] SQL injection prevention (parameterized queries)
-- [ ] XSS prevention (sanitized HTML)
-- [ ] CSRF protection enabled
-- [ ] Authentication/authorization verified
-- [ ] Rate limiting on all endpoints
-- [ ] Error messages don't leak sensitive data
+在 **任何提交之前**：
+- [ ] 没有硬编码密钥（API key、密码、token）
+- [ ] 所有用户输入都已校验
+- [ ] 已防止 SQL 注入（参数化查询）
+- [ ] 已防止 XSS（对 HTML 做净化）
+- [ ] 已启用 CSRF 防护
+- [ ] 已验证认证与授权
+- [ ] 所有接口都有速率限制
+- [ ] 错误信息不会泄漏敏感数据
 
-## Secret Management
+## 密钥管理
 
 ```typescript
 // NEVER: Hardcoded secrets
@@ -26,11 +26,11 @@ if (!apiKey) {
 }
 ```
 
-## Security Response Protocol
+## 安全响应流程
 
-If security issue found:
-1. STOP immediately
-2. Use **security-reviewer** agent
-3. Fix CRITICAL issues before continuing
-4. Rotate any exposed secrets
-5. Review entire codebase for similar issues
+如果发现安全问题：
+1. 立即停止继续推进
+2. 调用 **security-reviewer** agent
+3. 在继续前先修复所有 CRITICAL 问题
+4. 轮换任何已暴露的密钥
+5. 回查整个代码库中是否还有类似问题

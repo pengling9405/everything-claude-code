@@ -1,292 +1,144 @@
 ---
 name: tdd-workflow
-description: Use this skill when writing new features, fixing bugs, or refactoring code. Enforces test-driven development with 80%+ coverage including unit, integration, and E2E tests.
+description: 开发新功能、修复 bug 或做重构时使用。强制执行测试驱动开发，并要求单元、集成、E2E 综合覆盖达到 80%+。
 ---
 
 # Test-Driven Development Workflow
 
-This skill ensures all code development follows TDD principles with comprehensive test coverage.
+这个 skill 用来确保代码开发遵循 TDD 原则，并具备足够测试覆盖。
 
 ## When to Activate
 
-- Writing new features or functionality
-- Fixing bugs or issues
-- Refactoring existing code
-- Adding API endpoints
-- Creating new components
+- 开发新功能
+- 修复 bug
+- 重构现有代码
+- 新增 API
+- 创建新组件
 
 ## Core Principles
 
 ### 1. Tests BEFORE Code
-ALWAYS write tests first, then implement code to make tests pass.
+永远先写测试，再写实现。
 
 ### 2. Coverage Requirements
-- Minimum 80% coverage (unit + integration + E2E)
-- All edge cases covered
-- Error scenarios tested
-- Boundary conditions verified
+- 最低 80% 覆盖率
+- 覆盖边界情况
+- 覆盖错误场景
+- 覆盖边界值
 
 ### 3. Test Types
 
 #### Unit Tests
-- Individual functions and utilities
-- Component logic
-- Pure functions
-- Helpers and utilities
+- 单个函数
+- 工具方法
+- 纯逻辑
 
 #### Integration Tests
-- API endpoints
-- Database operations
-- Service interactions
-- External API calls
+- API 路由
+- 数据库交互
+- 服务间调用
 
 #### E2E Tests (Playwright)
-- Critical user flows
-- Complete workflows
-- Browser automation
-- UI interactions
+- 关键用户流程
+- 完整工作流
+- 浏览器交互
 
 ## TDD Workflow Steps
 
 ### Step 1: Write User Journeys
-```
+```text
 As a [role], I want to [action], so that [benefit]
-
-Example:
-As a user, I want to search for markets semantically,
-so that I can find relevant markets even without exact keywords.
 ```
 
 ### Step 2: Generate Test Cases
-For each user journey, create comprehensive test cases:
 
 ```typescript
 describe('Semantic Search', () => {
-  it('returns relevant markets for query', async () => {
-    // Test implementation
-  })
-
-  it('handles empty query gracefully', async () => {
-    // Test edge case
-  })
-
-  it('falls back to substring search when Redis unavailable', async () => {
-    // Test fallback behavior
-  })
-
-  it('sorts results by similarity score', async () => {
-    // Test sorting logic
-  })
+  it('returns relevant markets for query', async () => {})
+  it('handles empty query gracefully', async () => {})
+  it('falls back when Redis unavailable', async () => {})
 })
 ```
 
 ### Step 3: Run Tests (They Should Fail)
 ```bash
 npm test
-# Tests should fail - we haven't implemented yet
+# 测试此时应该失败
 ```
 
 ### Step 4: Implement Code
-Write minimal code to make tests pass:
-
 ```typescript
-// Implementation guided by tests
 export async function searchMarkets(query: string) {
-  // Implementation here
+  // 根据测试实现最小代码
 }
 ```
 
 ### Step 5: Run Tests Again
 ```bash
 npm test
-# Tests should now pass
+# 测试现在应该通过
 ```
 
 ### Step 6: Refactor
-Improve code quality while keeping tests green:
-- Remove duplication
-- Improve naming
-- Optimize performance
-- Enhance readability
+- 去重
+- 改善命名
+- 提升可读性
+- 必要时优化性能
 
 ### Step 7: Verify Coverage
 ```bash
 npm run test:coverage
-# Verify 80%+ coverage achieved
+# 验证覆盖率达到 80%+
 ```
 
 ## Testing Patterns
 
 ### Unit Test Pattern (Jest/Vitest)
 ```typescript
-import { render, screen, fireEvent } from '@testing-library/react'
-import { Button } from './Button'
-
 describe('Button Component', () => {
-  it('renders with correct text', () => {
-    render(<Button>Click me</Button>)
-    expect(screen.getByText('Click me')).toBeInTheDocument()
-  })
-
-  it('calls onClick when clicked', () => {
-    const handleClick = jest.fn()
-    render(<Button onClick={handleClick}>Click</Button>)
-
-    fireEvent.click(screen.getByRole('button'))
-
-    expect(handleClick).toHaveBeenCalledTimes(1)
-  })
-
-  it('is disabled when disabled prop is true', () => {
-    render(<Button disabled>Click</Button>)
-    expect(screen.getByRole('button')).toBeDisabled()
-  })
+  it('renders with correct text', () => {})
+  it('calls onClick when clicked', () => {})
+  it('is disabled when disabled prop is true', () => {})
 })
 ```
 
 ### API Integration Test Pattern
 ```typescript
-import { NextRequest } from 'next/server'
-import { GET } from './route'
-
 describe('GET /api/markets', () => {
-  it('returns markets successfully', async () => {
-    const request = new NextRequest('http://localhost/api/markets')
-    const response = await GET(request)
-    const data = await response.json()
-
-    expect(response.status).toBe(200)
-    expect(data.success).toBe(true)
-    expect(Array.isArray(data.data)).toBe(true)
-  })
-
-  it('validates query parameters', async () => {
-    const request = new NextRequest('http://localhost/api/markets?limit=invalid')
-    const response = await GET(request)
-
-    expect(response.status).toBe(400)
-  })
-
-  it('handles database errors gracefully', async () => {
-    // Mock database failure
-    const request = new NextRequest('http://localhost/api/markets')
-    // Test error handling
-  })
+  it('returns markets successfully', async () => {})
 })
 ```
 
 ### E2E Test Pattern (Playwright)
 ```typescript
-import { test, expect } from '@playwright/test'
-
-test('user can search and filter markets', async ({ page }) => {
-  // Navigate to markets page
+test('user can search and view market', async ({ page }) => {
   await page.goto('/')
-  await page.click('a[href="/markets"]')
-
-  // Verify page loaded
-  await expect(page.locator('h1')).toContainText('Markets')
-
-  // Search for markets
-  await page.fill('input[placeholder="Search markets"]', 'election')
-
-  // Wait for debounce and results
-  await page.waitForTimeout(600)
-
-  // Verify search results displayed
-  const results = page.locator('[data-testid="market-card"]')
-  await expect(results).toHaveCount(5, { timeout: 5000 })
-
-  // Verify results contain search term
-  const firstResult = results.first()
-  await expect(firstResult).toContainText('election', { ignoreCase: true })
-
-  // Filter by status
-  await page.click('button:has-text("Active")')
-
-  // Verify filtered results
-  await expect(results).toHaveCount(3)
-})
-
-test('user can create a new market', async ({ page }) => {
-  // Login first
-  await page.goto('/creator-dashboard')
-
-  // Fill market creation form
-  await page.fill('input[name="name"]', 'Test Market')
-  await page.fill('textarea[name="description"]', 'Test description')
-  await page.fill('input[name="endDate"]', '2025-12-31')
-
-  // Submit form
-  await page.click('button[type="submit"]')
-
-  // Verify success message
-  await expect(page.locator('text=Market created successfully')).toBeVisible()
-
-  // Verify redirect to market page
-  await expect(page).toHaveURL(/\/markets\/test-market/)
 })
 ```
 
 ## Test File Organization
 
-```
+建议结构：
+```text
 src/
-├── components/
-│   ├── Button/
-│   │   ├── Button.tsx
-│   │   ├── Button.test.tsx          # Unit tests
-│   │   └── Button.stories.tsx       # Storybook
-│   └── MarketCard/
-│       ├── MarketCard.tsx
-│       └── MarketCard.test.tsx
-├── app/
-│   └── api/
-│       └── markets/
-│           ├── route.ts
-│           └── route.test.ts         # Integration tests
+tests/
+├── unit/
+├── integration/
 └── e2e/
-    ├── markets.spec.ts               # E2E tests
-    ├── trading.spec.ts
-    └── auth.spec.ts
 ```
 
 ## Mocking External Services
 
 ### Supabase Mock
-```typescript
-jest.mock('@/lib/supabase', () => ({
-  supabase: {
-    from: jest.fn(() => ({
-      select: jest.fn(() => ({
-        eq: jest.fn(() => Promise.resolve({
-          data: [{ id: 1, name: 'Test Market' }],
-          error: null
-        }))
-      }))
-    }))
-  }
-}))
-```
+- mock 数据查询结果
+- 覆盖错误分支
 
 ### Redis Mock
-```typescript
-jest.mock('@/lib/redis', () => ({
-  searchMarketsByVector: jest.fn(() => Promise.resolve([
-    { slug: 'test-market', similarity_score: 0.95 }
-  ])),
-  checkRedisHealth: jest.fn(() => Promise.resolve({ connected: true }))
-}))
-```
+- 模拟缓存命中 / miss / 异常
 
 ### OpenAI Mock
-```typescript
-jest.mock('@/lib/openai', () => ({
-  generateEmbedding: jest.fn(() => Promise.resolve(
-    new Array(1536).fill(0.1) // Mock 1536-dim embedding
-  ))
-}))
-```
+- 固定 embedding / completion 响应
+- 保证测试可重复
 
 ## Test Coverage Verification
 
@@ -296,114 +148,62 @@ npm run test:coverage
 ```
 
 ### Coverage Thresholds
-```json
-{
-  "jest": {
-    "coverageThresholds": {
-      "global": {
-        "branches": 80,
-        "functions": 80,
-        "lines": 80,
-        "statements": 80
-      }
-    }
-  }
-}
-```
+- Branches: 80%
+- Functions: 80%
+- Lines: 80%
+- Statements: 80%
 
 ## Common Testing Mistakes to Avoid
 
 ### ❌ WRONG: Testing Implementation Details
-```typescript
-// Don't test internal state
-expect(component.state.count).toBe(5)
-```
+- 不要测试内部 state、私有方法、临时实现细节
 
 ### ✅ CORRECT: Test User-Visible Behavior
-```typescript
-// Test what users see
-expect(screen.getByText('Count: 5')).toBeInTheDocument()
-```
+- 测试用户可观察到的输出、状态与副作用
 
 ### ❌ WRONG: Brittle Selectors
-```typescript
-// Breaks easily
-await page.click('.css-class-xyz')
-```
+- 不要依赖容易变化的 DOM 结构
 
 ### ✅ CORRECT: Semantic Selectors
-```typescript
-// Resilient to changes
-await page.click('button:has-text("Submit")')
-await page.click('[data-testid="submit-button"]')
-```
+- 优先 `role`、`label`、`data-testid`
 
 ### ❌ WRONG: No Test Isolation
-```typescript
-// Tests depend on each other
-test('creates user', () => { /* ... */ })
-test('updates same user', () => { /* depends on previous test */ })
-```
+- 不要让测试相互依赖
 
 ### ✅ CORRECT: Independent Tests
-```typescript
-// Each test sets up its own data
-test('creates user', () => {
-  const user = createTestUser()
-  // Test logic
-})
-
-test('updates user', () => {
-  const user = createTestUser()
-  // Update logic
-})
-```
+- 每个测试独立准备数据与环境
 
 ## Continuous Testing
 
 ### Watch Mode During Development
 ```bash
 npm test -- --watch
-# Tests run automatically on file changes
 ```
 
 ### Pre-Commit Hook
 ```bash
-# Runs before every commit
 npm test && npm run lint
 ```
 
 ### CI/CD Integration
-```yaml
-# GitHub Actions
-- name: Run Tests
-  run: npm test -- --coverage
-- name: Upload Coverage
-  uses: codecov/codecov-action@v3
+```bash
+npm test -- --coverage --ci
 ```
 
 ## Best Practices
 
-1. **Write Tests First** - Always TDD
-2. **One Assert Per Test** - Focus on single behavior
-3. **Descriptive Test Names** - Explain what's tested
-4. **Arrange-Act-Assert** - Clear test structure
-5. **Mock External Dependencies** - Isolate unit tests
-6. **Test Edge Cases** - Null, undefined, empty, large
-7. **Test Error Paths** - Not just happy paths
-8. **Keep Tests Fast** - Unit tests < 50ms each
-9. **Clean Up After Tests** - No side effects
-10. **Review Coverage Reports** - Identify gaps
+- 每次只让一个失败测试变绿
+- 保持实现最小化
+- 重构前后都依赖测试护栏
+- 让测试名称表达业务意图
 
 ## Success Metrics
 
-- 80%+ code coverage achieved
-- All tests passing (green)
-- No skipped or disabled tests
-- Fast test execution (< 30s for unit tests)
-- E2E tests cover critical user flows
-- Tests catch bugs before production
+- 关键逻辑都有测试
+- 覆盖率达标
+- 重构时可以放心修改
+- bug 修复都附带回归测试
 
 ---
 
-**Remember**: Tests are not optional. They are the safety net that enables confident refactoring, rapid development, and production reliability.
+**原则**：TDD 的重点不是“测试写得多”，而是让实现始终被真实需求牵引，并让后续修改有可靠护栏。

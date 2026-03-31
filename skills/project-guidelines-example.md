@@ -1,88 +1,67 @@
 # Project Guidelines Skill (Example)
 
-This is an example of a project-specific skill. Use this as a template for your own projects.
+这是一个项目专属 skill 的示例模板，可作为你在真实项目中编写私有规范时的参考。
 
-Based on a real production application: [Zenith](https://zenith.chat) - AI-powered customer discovery platform.
+示例基于生产应用：[Zenith](https://zenith.chat)。
 
 ---
 
 ## When to Use
 
-Reference this skill when working on the specific project it's designed for. Project skills contain:
-- Architecture overview
-- File structure
-- Code patterns
-- Testing requirements
-- Deployment workflow
+当你在某个具体项目里工作时，可以引用这类 project skill。它通常应包含：
+- 架构概览
+- 文件结构
+- 代码模式
+- 测试要求
+- 部署流程
 
 ---
 
 ## Architecture Overview
 
-**Tech Stack:**
-- **Frontend**: Next.js 15 (App Router), TypeScript, React
-- **Backend**: FastAPI (Python), Pydantic models
-- **Database**: Supabase (PostgreSQL)
-- **AI**: Claude API with tool calling and structured output
-- **Deployment**: Google Cloud Run
-- **Testing**: Playwright (E2E), pytest (backend), React Testing Library
+**Tech Stack：**
+- **Frontend**：Next.js 15（App Router）、TypeScript、React
+- **Backend**：FastAPI（Python）、Pydantic
+- **Database**：Supabase（PostgreSQL）
+- **AI**：Claude API + tool calling + structured output
+- **Deployment**：Google Cloud Run
+- **Testing**：Playwright、pytest、React Testing Library
 
-**Services:**
-```
-┌─────────────────────────────────────────────────────────────┐
-│                         Frontend                            │
-│  Next.js 15 + TypeScript + TailwindCSS                     │
-│  Deployed: Vercel / Cloud Run                              │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│                         Backend                             │
-│  FastAPI + Python 3.11 + Pydantic                          │
-│  Deployed: Cloud Run                                       │
-└─────────────────────────────────────────────────────────────┘
-                              │
-              ┌───────────────┼───────────────┐
-              ▼               ▼               ▼
-        ┌──────────┐   ┌──────────┐   ┌──────────┐
-        │ Supabase │   │  Claude  │   │  Redis   │
-        │ Database │   │   API    │   │  Cache   │
-        └──────────┘   └──────────┘   └──────────┘
+**Services：**
+```text
+Frontend (Next.js)
+  ↓
+Backend (FastAPI)
+  ├─ Supabase
+  ├─ Claude API
+  └─ Redis
 ```
 
 ---
 
 ## File Structure
 
-```
+```text
 project/
 ├── frontend/
 │   └── src/
-│       ├── app/              # Next.js app router pages
-│       │   ├── api/          # API routes
-│       │   ├── (auth)/       # Auth-protected routes
-│       │   └── workspace/    # Main app workspace
-│       ├── components/       # React components
-│       │   ├── ui/           # Base UI components
-│       │   ├── forms/        # Form components
-│       │   └── layouts/      # Layout components
-│       ├── hooks/            # Custom React hooks
-│       ├── lib/              # Utilities
-│       ├── types/            # TypeScript definitions
-│       └── config/           # Configuration
-│
+│       ├── app/
+│       ├── components/
+│       ├── hooks/
+│       ├── lib/
+│       ├── types/
+│       └── config/
 ├── backend/
-│   ├── routers/              # FastAPI route handlers
-│   ├── models.py             # Pydantic models
-│   ├── main.py               # FastAPI app entry
-│   ├── auth_system.py        # Authentication
-│   ├── database.py           # Database operations
-│   ├── services/             # Business logic
-│   └── tests/                # pytest tests
-│
-├── deploy/                   # Deployment configs
-├── docs/                     # Documentation
-└── scripts/                  # Utility scripts
+│   ├── routers/
+│   ├── models.py
+│   ├── main.py
+│   ├── auth_system.py
+│   ├── database.py
+│   ├── services/
+│   └── tests/
+├── deploy/
+├── docs/
+└── scripts/
 ```
 
 ---
@@ -92,24 +71,16 @@ project/
 ### API Response Format (FastAPI)
 
 ```python
-from pydantic import BaseModel
-from typing import Generic, TypeVar, Optional
-
-T = TypeVar('T')
-
 class ApiResponse(BaseModel, Generic[T]):
     success: bool
     data: Optional[T] = None
     error: Optional[str] = None
-
-    @classmethod
-    def ok(cls, data: T) -> "ApiResponse[T]":
-        return cls(success=True, data=data)
-
-    @classmethod
-    def fail(cls, error: str) -> "ApiResponse[T]":
-        return cls(success=False, error=error)
 ```
+
+统一响应结构有助于：
+- 前后端对齐
+- 错误处理统一
+- 提升可测试性
 
 ### Frontend API Calls (TypeScript)
 
@@ -119,101 +90,31 @@ interface ApiResponse<T> {
   data?: T
   error?: string
 }
-
-async function fetchApi<T>(
-  endpoint: string,
-  options?: RequestInit
-): Promise<ApiResponse<T>> {
-  try {
-    const response = await fetch(`/api${endpoint}`, {
-      ...options,
-      headers: {
-        'Content-Type': 'application/json',
-        ...options?.headers,
-      },
-    })
-
-    if (!response.ok) {
-      return { success: false, error: `HTTP ${response.status}` }
-    }
-
-    return await response.json()
-  } catch (error) {
-    return { success: false, error: String(error) }
-  }
-}
 ```
+
+建议：
+- 前端统一通过一个 `fetchApi` 或 client 封装请求
+- 在同一层处理错误与 headers
 
 ### Claude AI Integration (Structured Output)
 
 ```python
-from anthropic import Anthropic
-from pydantic import BaseModel
-
 class AnalysisResult(BaseModel):
     summary: str
     key_points: list[str]
     confidence: float
-
-async def analyze_with_claude(content: str) -> AnalysisResult:
-    client = Anthropic()
-
-    response = client.messages.create(
-        model="claude-sonnet-4-5-20250514",
-        max_tokens=1024,
-        messages=[{"role": "user", "content": content}],
-        tools=[{
-            "name": "provide_analysis",
-            "description": "Provide structured analysis",
-            "input_schema": AnalysisResult.model_json_schema()
-        }],
-        tool_choice={"type": "tool", "name": "provide_analysis"}
-    )
-
-    # Extract tool use result
-    tool_use = next(
-        block for block in response.content
-        if block.type == "tool_use"
-    )
-
-    return AnalysisResult(**tool_use.input)
 ```
+
+重点：
+- 用 schema 约束 AI 输出
+- 明确工具调用入口
+- 不直接信任自由文本
 
 ### Custom Hooks (React)
 
-```typescript
-import { useState, useCallback } from 'react'
-
-interface UseApiState<T> {
-  data: T | null
-  loading: boolean
-  error: string | null
-}
-
-export function useApi<T>(
-  fetchFn: () => Promise<ApiResponse<T>>
-) {
-  const [state, setState] = useState<UseApiState<T>>({
-    data: null,
-    loading: false,
-    error: null,
-  })
-
-  const execute = useCallback(async () => {
-    setState(prev => ({ ...prev, loading: true, error: null }))
-
-    const result = await fetchFn()
-
-    if (result.success) {
-      setState({ data: result.data!, loading: false, error: null })
-    } else {
-      setState({ data: null, loading: false, error: result.error! })
-    }
-  }, [fetchFn])
-
-  return { ...state, execute }
-}
-```
+- 把页面级状态逻辑抽成 hook
+- 减少页面组件体积
+- 让数据获取、过滤、提交逻辑更可复用
 
 ---
 
@@ -222,64 +123,27 @@ export function useApi<T>(
 ### Backend (pytest)
 
 ```bash
-# Run all tests
-poetry run pytest tests/
+# 运行全部测试
+pytest
 
-# Run with coverage
-poetry run pytest tests/ --cov=. --cov-report=html
+# 带覆盖率
+pytest --cov
 
-# Run specific test file
-poetry run pytest tests/test_auth.py -v
-```
-
-**Test structure:**
-```python
-import pytest
-from httpx import AsyncClient
-from main import app
-
-@pytest.fixture
-async def client():
-    async with AsyncClient(app=app, base_url="http://test") as ac:
-        yield ac
-
-@pytest.mark.asyncio
-async def test_health_check(client: AsyncClient):
-    response = await client.get("/health")
-    assert response.status_code == 200
-    assert response.json()["status"] == "healthy"
+# 运行单个测试文件
+pytest tests/test_api.py
 ```
 
 ### Frontend (React Testing Library)
 
 ```bash
-# Run tests
-npm run test
+# 运行测试
+npm test
 
-# Run with coverage
-npm run test -- --coverage
+# 带覆盖率
+npm run test:coverage
 
-# Run E2E tests
-npm run test:e2e
-```
-
-**Test structure:**
-```typescript
-import { render, screen, fireEvent } from '@testing-library/react'
-import { WorkspacePanel } from './WorkspacePanel'
-
-describe('WorkspacePanel', () => {
-  it('renders workspace correctly', () => {
-    render(<WorkspacePanel />)
-    expect(screen.getByRole('main')).toBeInTheDocument()
-  })
-
-  it('handles session creation', async () => {
-    render(<WorkspacePanel />)
-    fireEvent.click(screen.getByText('New Session'))
-    expect(await screen.findByText('Session created')).toBeInTheDocument()
-  })
-})
+# 运行 E2E
+npx playwright test
 ```
 
 ---
@@ -288,58 +152,52 @@ describe('WorkspacePanel', () => {
 
 ### Pre-Deployment Checklist
 
-- [ ] All tests passing locally
-- [ ] `npm run build` succeeds (frontend)
-- [ ] `poetry run pytest` passes (backend)
-- [ ] No hardcoded secrets
-- [ ] Environment variables documented
-- [ ] Database migrations ready
+- [ ] 环境变量已配置
+- [ ] 数据库迁移已执行
+- [ ] 构建通过
+- [ ] 核心路径测试通过
 
 ### Deployment Commands
 
 ```bash
-# Build and deploy frontend
-cd frontend && npm run build
-gcloud run deploy frontend --source .
+# 构建并部署前端
+npm run build
 
-# Build and deploy backend
-cd backend
-gcloud run deploy backend --source .
+# 构建并部署后端
+docker build -t app .
 ```
 
 ### Environment Variables
 
 ```bash
 # Frontend (.env.local)
-NEXT_PUBLIC_API_URL=https://api.example.com
-NEXT_PUBLIC_SUPABASE_URL=https://xxx.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...
+NEXT_PUBLIC_API_URL=
 
 # Backend (.env)
-DATABASE_URL=postgresql://...
-ANTHROPIC_API_KEY=sk-ant-...
-SUPABASE_URL=https://xxx.supabase.co
-SUPABASE_KEY=eyJ...
+DATABASE_URL=
+CLAUDE_API_KEY=
 ```
 
 ---
 
 ## Critical Rules
 
-1. **No emojis** in code, comments, or documentation
-2. **Immutability** - never mutate objects or arrays
-3. **TDD** - write tests before implementation
-4. **80% coverage** minimum
-5. **Many small files** - 200-400 lines typical, 800 max
-6. **No console.log** in production code
-7. **Proper error handling** with try/catch
-8. **Input validation** with Pydantic/Zod
+- 优先遵循项目现有模式，不要引入个人偏好
+- 新增功能前先看相邻实现
+- 所有对外输入都要校验
+- AI 输出必须结构化
+- 核心路径必须有测试
 
 ---
 
 ## Related Skills
 
-- `coding-standards.md` - General coding best practices
-- `backend-patterns.md` - API and database patterns
-- `frontend-patterns.md` - React and Next.js patterns
-- `tdd-workflow/` - Test-driven development methodology
+- `coding-standards`
+- `frontend-patterns`
+- `backend-patterns`
+- `tdd-workflow`
+- `security-review`
+
+---
+
+**建议**：每个真实项目都应该维护一份自己的 project skill，把“这个项目和别的项目到底哪里不一样”写清楚。

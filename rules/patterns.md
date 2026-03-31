@@ -44,12 +44,12 @@ interface Repository<T> {
 
 ## Skeleton Projects
 
-When implementing new functionality:
-1. Search for battle-tested skeleton projects
-2. Use parallel agents to evaluate options:
-   - Security assessment
-   - Extensibility analysis
-   - Relevance scoring
-   - Implementation planning
-3. Clone best match as foundation
-4. Iterate within proven structure
+在实现新功能时：
+1. 先查找经过验证的骨架项目
+2. 用并行 agent 评估候选方案：
+   - 安全评估
+   - 可扩展性分析
+   - 相关性打分
+   - 实施规划
+3. 克隆最匹配的骨架作为基础
+4. 在成熟结构上继续迭代

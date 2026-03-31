@@ -1,277 +1,162 @@
-# Everything Claude Code
+# Everything Claude Code 中文整理版
 
-**The complete collection of Claude Code configs from an Anthropic hackathon winner.**
+> 说明：这是中文整理版入口文档，用于帮助中文读者快速理解仓库结构与使用方式。英文原文保持不变。
 
-Production-ready agents, skills, hooks, commands, rules, and MCP configurations evolved over 10+ months of intensive daily use building real products.
+## 这是什么
 
----
+`everything-claude-code` 是一套围绕 Claude Code 的完整配置资产集合，包含：
 
-## The Guides
+- `agents`：面向不同任务的专用子代理
+- `skills`：可复用的方法论与工作流知识
+- `commands`：以 `/command` 形式触发的快捷工作流
+- `rules`：始终生效的规则与工程约束
+- `hooks`：在工具执行前后或会话生命周期触发的自动化逻辑
+- `contexts`：按开发、研究、审查等模式注入的上下文
+- `mcp-configs`：常见 MCP 服务配置样板
 
-This repo is the raw code only. The guides explain everything.
+这不是一个可直接运行的业务应用仓库，而是一个用于构建 AI 开发工作系统的“配置仓库”。
 
-### Start Here: The Shorthand Guide
+## 推荐阅读顺序
 
-<img width="592" height="445" alt="image" src="https://github.com/user-attachments/assets/1a471488-59cc-425b-8345-5245c7efbcef" />
+原仓库作者建议先看两篇配套指南：
 
-**[The Shorthand Guide to Everything Claude Code](https://x.com/affaanmustafa/status/2012378465664745795)**
+1. Shorthand Guide：理解每种配置类型的职责、整体组织方式、上下文管理和基本理念
+2. Longform Guide：理解高级主题，例如 token 优化、session memory、验证闭环、并行化与持续学习
 
-The foundation - what each config type does, how to structure your setup, context window management, and the philosophy behind these configs. **Read this first.**
+## 仓库结构
 
----
-
-### Then: The Longform Guide
-
-<img width="609" height="428" alt="image" src="https://github.com/user-attachments/assets/c9ca43bc-b149-427f-b551-af6840c368f0" />
-
-**[The Longform Guide to Everything Claude Code](https://x.com/affaanmustafa/status/2014040193557471352)**
-
-The advanced techniques - token optimization, memory persistence across sessions, verification loops & evals, parallelization strategies, subagent orchestration, and continuous learning. Everything in this guide has working code in this repo.
-
-| Topic | What You'll Learn |
-|-------|-------------------|
-| Token Optimization | Model selection, system prompt slimming, background processes |
-| Memory Persistence | Hooks that save/load context across sessions automatically |
-| Continuous Learning | Auto-extract patterns from sessions into reusable skills |
-| Verification Loops | Checkpoint vs continuous evals, grader types, pass@k metrics |
-| Parallelization | Git worktrees, cascade method, when to scale instances |
-| Subagent Orchestration | The context problem, iterative retrieval pattern |
-
-
----
-
-## What's Inside
-
-```
+```text
 everything-claude-code/
-|-- agents/           # Specialized subagents for delegation
-|   |-- planner.md           # Feature implementation planning
-|   |-- architect.md         # System design decisions
-|   |-- tdd-guide.md         # Test-driven development
-|   |-- code-reviewer.md     # Quality and security review
-|   |-- security-reviewer.md # Vulnerability analysis
-|   |-- build-error-resolver.md
-|   |-- e2e-runner.md        # Playwright E2E testing
-|   |-- refactor-cleaner.md  # Dead code cleanup
-|   |-- doc-updater.md       # Documentation sync
-|
-|-- skills/           # Workflow definitions and domain knowledge
-|   |-- coding-standards.md         # Language best practices
-|   |-- backend-patterns.md         # API, database, caching patterns
-|   |-- frontend-patterns.md        # React, Next.js patterns
-|   |-- continuous-learning/        # Auto-extract patterns from sessions (Longform Guide)
-|   |-- strategic-compact/          # Manual compaction suggestions (Longform Guide)
-|   |-- tdd-workflow/               # TDD methodology
-|   |-- security-review/            # Security checklist
-|
-|-- commands/         # Slash commands for quick execution
-|   |-- tdd.md              # /tdd - Test-driven development
-|   |-- plan.md             # /plan - Implementation planning
-|   |-- e2e.md              # /e2e - E2E test generation
-|   |-- code-review.md      # /code-review - Quality review
-|   |-- build-fix.md        # /build-fix - Fix build errors
-|   |-- refactor-clean.md   # /refactor-clean - Dead code removal
-|   |-- learn.md            # /learn - Extract patterns mid-session (Longform Guide)
-|
-|-- rules/            # Always-follow guidelines
-|   |-- security.md         # Mandatory security checks
-|   |-- coding-style.md     # Immutability, file organization
-|   |-- testing.md          # TDD, 80% coverage requirement
-|   |-- git-workflow.md     # Commit format, PR process
-|   |-- agents.md           # When to delegate to subagents
-|   |-- performance.md      # Model selection, context management
-|
-|-- hooks/            # Trigger-based automations
-|   |-- hooks.json                # All hooks config (PreToolUse, PostToolUse, Stop, etc.)
-|   |-- memory-persistence/       # Session lifecycle hooks (Longform Guide)
-|   |   |-- pre-compact.sh        # Save state before compaction
-|   |   |-- session-start.sh      # Load previous context
-|   |   |-- session-end.sh        # Persist learnings on end
-|   |-- strategic-compact/        # Compaction suggestions (Longform Guide)
-|
-|-- contexts/         # Dynamic system prompt injection contexts (Longform Guide)
-|   |-- dev.md              # Development mode context
-|   |-- review.md           # Code review mode context
-|   |-- research.md         # Research/exploration mode context
-|
-|-- examples/         # Example configurations and sessions
-|   |-- CLAUDE.md           # Example project-level config
-|   |-- user-CLAUDE.md      # Example user-level config
-|   |-- sessions/           # Example session log files (Longform Guide)
-|
-|-- mcp-configs/      # MCP server configurations
-|   |-- mcp-servers.json    # GitHub, Supabase, Vercel, Railway, etc.
-|
-|-- plugins/          # Plugin ecosystem documentation
-    |-- README.md           # Plugins, marketplaces, skills guide
+├── agents/            # 专项子代理
+├── commands/          # Slash commands
+├── contexts/          # 模式化上下文
+├── examples/          # 示例配置与 session 文件
+├── hooks/             # Hook 配置与脚本
+├── mcp-configs/       # MCP 服务配置样板
+├── plugins/           # 插件与 marketplace 说明
+├── rules/             # 全局规则
+└── skills/            # 技能与工作流知识
 ```
 
----
+## 快速开始
 
-## Quick Start
-
-### 1. Copy what you need
+### 1. 克隆仓库
 
 ```bash
-# Clone the repo
 git clone https://github.com/affaan-m/everything-claude-code.git
+```
 
-# Copy agents to your Claude config
+### 2. 拷贝你需要的配置到 `~/.claude/`
+
+```bash
+# agents
 cp everything-claude-code/agents/*.md ~/.claude/agents/
 
-# Copy rules
+# rules
 cp everything-claude-code/rules/*.md ~/.claude/rules/
 
-# Copy commands
+# commands
 cp everything-claude-code/commands/*.md ~/.claude/commands/
 
-# Copy skills
+# skills
 cp -r everything-claude-code/skills/* ~/.claude/skills/
 ```
 
-### 2. Add hooks to settings.json
+### 3. 配置 hooks
 
-Copy the hooks from `hooks/hooks.json` to your `~/.claude/settings.json`.
+把 [hooks/hooks.json](/Users/zhanyu/projects/everything-claude-code/hooks/hooks.json) 中的配置合并到你的 `~/.claude/settings.json`。
 
-### 3. Configure MCPs
+### 4. 配置 MCP
 
-Copy desired MCP servers from `mcp-configs/mcp-servers.json` to your `~/.claude.json`.
+把 [mcp-configs/mcp-servers.json](/Users/zhanyu/projects/everything-claude-code/mcp-configs/mcp-servers.json) 中你需要的服务复制到 `~/.claude.json`。
 
-**Important:** Replace `YOUR_*_HERE` placeholders with your actual API keys.
+注意：
 
-### 4. Read the guides
+- 把 `YOUR_*_HERE` 占位符替换成真实配置
+- 不要一次启用过多 MCP，避免显著压缩可用上下文窗口
 
-Seriously, read the guides. These configs make 10x more sense with context.
-
-1. **[Shorthand Guide](https://x.com/affaanmustafa/status/2012378465664745795)** - Setup and foundations
-2. **[Longform Guide](https://x.com/affaanmustafa/status/2014040193557471352)** - Advanced techniques (token optimization, memory persistence, evals, parallelization)
-
----
-
-## Key Concepts
+## 核心概念
 
 ### Agents
 
-Subagents handle delegated tasks with limited scope. Example:
+`agents/` 下的文件是专用角色提示词，例如：
 
-```markdown
----
-name: code-reviewer
-description: Reviews code for quality, security, and maintainability
-tools: Read, Grep, Glob, Bash
-model: opus
----
-
-You are a senior code reviewer...
-```
+- `planner`：复杂需求的实施规划
+- `architect`：架构设计与取舍分析
+- `tdd-guide`：测试先行工作流
+- `code-reviewer`：代码质量与安全审查
+- `security-reviewer`：漏洞发现与修复建议
+- `e2e-runner`：Playwright 端到端测试
 
 ### Skills
 
-Skills are workflow definitions invoked by commands or agents:
+`skills/` 下的内容是可复用的知识与方法论，例如：
 
-```markdown
-# TDD Workflow
+- `coding-standards`
+- `frontend-patterns`
+- `backend-patterns`
+- `tdd-workflow`
+- `security-review`
+- `continuous-learning`
 
-1. Define interfaces first
-2. Write failing tests (RED)
-3. Implement minimal code (GREEN)
-4. Refactor (IMPROVE)
-5. Verify 80%+ coverage
-```
+这些技能可以被命令、代理或宿主自动触发。
 
-### Hooks
+### Commands
 
-Hooks fire on tool events. Example - warn about console.log:
+`commands/` 是便于直接调用的工作流入口，例如：
 
-```json
-{
-  "matcher": "tool == \"Edit\" && tool_input.file_path matches \"\\\\.(ts|tsx|js|jsx)$\"",
-  "hooks": [{
-    "type": "command",
-    "command": "#!/bin/bash\ngrep -n 'console\\.log' \"$file_path\" && echo '[Hook] Remove console.log' >&2"
-  }]
-}
-```
+- `/plan`：先出计划，等确认后再实施
+- `/tdd`：按 TDD 节奏实施需求
+- `/e2e`：生成并运行 Playwright 测试
+- `/code-review`：对未提交改动做系统审查
+- `/build-fix`：逐步修复构建错误
 
 ### Rules
 
-Rules are always-follow guidelines. Keep them modular:
+`rules/` 定义常驻工程约束，覆盖：
 
-```
-~/.claude/rules/
-  security.md      # No hardcoded secrets
-  coding-style.md  # Immutability, file limits
-  testing.md       # TDD, coverage requirements
-```
+- 安全
+- 编码风格
+- 测试要求
+- Git 工作流
+- 代理编排
+- 性能与上下文管理
 
----
+### Hooks
 
-## Contributing
+`hooks/` 用于在关键时机自动运行脚本，例如：
 
-**Contributions are welcome and encouraged.**
+- 在启动 dev server 前阻止非 tmux 运行
+- 编辑 TS/JS 文件后自动格式化
+- 结束会话时检查 `console.log`
+- 在 session 启动、压缩、结束时做记忆持久化
 
-This repo is meant to be a community resource. If you have:
-- Useful agents or skills
-- Clever hooks
-- Better MCP configurations
-- Improved rules
+## 适合谁
 
-Please contribute! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+这套配置更适合：
 
-### Ideas for Contributions
+- 重度使用 Claude Code 的开发者
+- 需要稳定工程流程的 solo builder
+- 想把 prompt、规则、工作流、MCP、记忆机制系统化的人
 
-- Language-specific skills (Python, Go, Rust patterns)
-- Framework-specific configs (Django, Rails, Laravel)
-- DevOps agents (Kubernetes, Terraform, AWS)
-- Testing strategies (different frameworks)
-- Domain-specific knowledge (ML, data engineering, mobile)
+如果你刚开始使用，建议只先拷贝：
 
----
+- `rules/`
+- `commands/plan.md`
+- `commands/tdd.md`
+- `skills/tdd-workflow/`
+- `skills/security-review/`
 
-## Background
+后续再逐步增加 agents、hooks 和 MCP。
 
-I've been using Claude Code since the experimental rollout. Won the Anthropic x Forum Ventures hackathon in Sep 2025 building [zenith.chat](https://zenith.chat) with [@DRodriguezFX](https://x.com/DRodriguezFX) - entirely using Claude Code.
+## 使用建议
 
-These configs are battle-tested across multiple production applications.
+- 不要一次性启用全部配置，先用最能解决你当前问题的部分
+- 先建立自己的基础规则，再慢慢引入高级自动化
+- 将这套仓库视为骨架，而不是必须原样照搬的成品
 
----
+## 相关文件
 
-## Important Notes
+- 英文原文：[README.md](/Users/zhanyu/projects/everything-claude-code/README.md)
+- 贡献说明：[CONTRIBUTING.md](/Users/zhanyu/projects/everything-claude-code/CONTRIBUTING.md)
 
-### Context Window Management
-
-**Critical:** Don't enable all MCPs at once. Your 200k context window can shrink to 70k with too many tools enabled.
-
-Rule of thumb:
-- Have 20-30 MCPs configured
-- Keep under 10 enabled per project
-- Under 80 tools active
-
-Use `disabledMcpServers` in project config to disable unused ones.
-
-### Customization
-
-These configs work for my workflow. You should:
-1. Start with what resonates
-2. Modify for your stack
-3. Remove what you don't use
-4. Add your own patterns
-
----
-
-## Links
-
-- **Shorthand Guide (Start Here):** [The Shorthand Guide to Everything Claude Code](https://x.com/affaanmustafa/status/2012378465664745795)
-- **Longform Guide (Advanced):** [The Longform Guide to Everything Claude Code](https://x.com/affaanmustafa/status/2014040193557471352)
-- **Follow:** [@affaanmustafa](https://x.com/affaanmustafa)
-- **zenith.chat:** [zenith.chat](https://zenith.chat)
-
----
-
-## License
-
-MIT - Use freely, modify as needed, contribute back if you can.
-
----
-
-**Star this repo if it helps. Read both guides. Build something great.**

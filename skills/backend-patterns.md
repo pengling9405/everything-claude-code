@@ -1,33 +1,37 @@
 ---
 name: backend-patterns
-description: Backend architecture patterns, API design, database optimization, and server-side best practices for Node.js, Express, and Next.js API routes.
+description: 面向 Node.js、Express 与 Next.js API routes 的后端架构模式、API 设计、数据库优化与服务端最佳实践。
 ---
 
 # Backend Development Patterns
 
-Backend architecture patterns and best practices for scalable server-side applications.
+适用于可扩展服务端应用的后端模式与实践集合。
 
 ## API Design Patterns
 
 ### RESTful API Structure
 
 ```typescript
-// ✅ Resource-based URLs
-GET    /api/markets                 # List resources
-GET    /api/markets/:id             # Get single resource
-POST   /api/markets                 # Create resource
-PUT    /api/markets/:id             # Replace resource
-PATCH  /api/markets/:id             # Update resource
-DELETE /api/markets/:id             # Delete resource
+// ✅ 资源化 URL
+GET    /api/markets
+GET    /api/markets/:id
+POST   /api/markets
+PUT    /api/markets/:id
+PATCH  /api/markets/:id
+DELETE /api/markets/:id
 
-// ✅ Query parameters for filtering, sorting, pagination
+// ✅ 用 query 参数做筛选 / 排序 / 分页
 GET /api/markets?status=active&sort=volume&limit=20&offset=0
 ```
+
+核心要求：
+- URL 表达资源，不表达动作
+- 请求体承载输入，响应体承载结果
+- 错误码与错误结构保持一致
 
 ### Repository Pattern
 
 ```typescript
-// Abstract data access logic
 interface MarketRepository {
   findAll(filters?: MarketFilters): Promise<Market[]>
   findById(id: string): Promise<Market | null>
@@ -35,62 +39,36 @@ interface MarketRepository {
   update(id: string, data: UpdateMarketDto): Promise<Market>
   delete(id: string): Promise<void>
 }
-
-class SupabaseMarketRepository implements MarketRepository {
-  async findAll(filters?: MarketFilters): Promise<Market[]> {
-    let query = supabase.from('markets').select('*')
-
-    if (filters?.status) {
-      query = query.eq('status', filters.status)
-    }
-
-    if (filters?.limit) {
-      query = query.limit(filters.limit)
-    }
-
-    const { data, error } = await query
-
-    if (error) throw new Error(error.message)
-    return data
-  }
-
-  // Other methods...
-}
 ```
+
+适用场景：
+- 需要将数据访问与业务逻辑分离
+- 未来可能切换数据源
+- 测试中需要 mock 数据层
 
 ### Service Layer Pattern
 
 ```typescript
-// Business logic separated from data access
 class MarketService {
   constructor(private marketRepo: MarketRepository) {}
 
-  async searchMarkets(query: string, limit: number = 10): Promise<Market[]> {
-    // Business logic
+  async searchMarkets(query: string, limit = 10) {
     const embedding = await generateEmbedding(query)
     const results = await this.vectorSearch(embedding, limit)
-
-    // Fetch full data
     const markets = await this.marketRepo.findByIds(results.map(r => r.id))
-
-    // Sort by similarity
-    return markets.sort((a, b) => {
-      const scoreA = results.find(r => r.id === a.id)?.score || 0
-      const scoreB = results.find(r => r.id === b.id)?.score || 0
-      return scoreA - scoreB
-    })
-  }
-
-  private async vectorSearch(embedding: number[], limit: number) {
-    // Vector search implementation
+    return markets
   }
 }
 ```
 
+服务层只做三件事：
+- 编排业务流程
+- 保持领域规则集中
+- 隔离控制器与数据层
+
 ### Middleware Pattern
 
 ```typescript
-// Request/response processing pipeline
 export function withAuth(handler: NextApiHandler): NextApiHandler {
   return async (req, res) => {
     const token = req.headers.authorization?.replace('Bearer ', '')
@@ -99,484 +77,176 @@ export function withAuth(handler: NextApiHandler): NextApiHandler {
       return res.status(401).json({ error: 'Unauthorized' })
     }
 
-    try {
-      const user = await verifyToken(token)
-      req.user = user
-      return handler(req, res)
-    } catch (error) {
-      return res.status(401).json({ error: 'Invalid token' })
-    }
+    const user = await verifyToken(token)
+    req.user = user
+    return handler(req, res)
   }
 }
-
-// Usage
-export default withAuth(async (req, res) => {
-  // Handler has access to req.user
-})
 ```
+
+适合抽离：
+- 鉴权
+- 日志
+- rate limit
+- tracing
+- 错误包装
 
 ## Database Patterns
 
 ### Query Optimization
 
-```typescript
-// ✅ GOOD: Select only needed columns
-const { data } = await supabase
-  .from('markets')
-  .select('id, name, status, volume')
-  .eq('status', 'active')
-  .order('volume', { ascending: false })
-  .limit(10)
-
-// ❌ BAD: Select everything
-const { data } = await supabase
-  .from('markets')
-  .select('*')
-```
+- 只查需要的字段
+- 为高频过滤字段建立索引
+- 避免在热点路径里做大范围 scan
+- 对长链路查询加缓存或预聚合
 
 ### N+1 Query Prevention
 
 ```typescript
-// ❌ BAD: N+1 query problem
-const markets = await getMarkets()
+// ❌ 循环里逐条查
 for (const market of markets) {
-  market.creator = await getUser(market.creator_id)  // N queries
+  market.owner = await db.users.findById(market.userId)
 }
 
-// ✅ GOOD: Batch fetch
-const markets = await getMarkets()
-const creatorIds = markets.map(m => m.creator_id)
-const creators = await getUsers(creatorIds)  // 1 query
-const creatorMap = new Map(creators.map(c => [c.id, c]))
-
-markets.forEach(market => {
-  market.creator = creatorMap.get(market.creator_id)
-})
+// ✅ 批量查
+const userIds = [...new Set(markets.map(m => m.userId))]
+const users = await db.users.findManyByIds(userIds)
 ```
 
 ### Transaction Pattern
 
 ```typescript
-async function createMarketWithPosition(
-  marketData: CreateMarketDto,
-  positionData: CreatePositionDto
-) {
-  // Use Supabase transaction
-  const { data, error } = await supabase.rpc('create_market_with_position', {
-    market_data: marketData,
-    position_data: positionData
-  })
-
-  if (error) throw new Error('Transaction failed')
-  return data
-}
-
-// SQL function in Supabase
-CREATE OR REPLACE FUNCTION create_market_with_position(
-  market_data jsonb,
-  position_data jsonb
-)
-RETURNS jsonb
-LANGUAGE plpgsql
-AS $$
-BEGIN
-  -- Start transaction automatically
-  INSERT INTO markets VALUES (market_data);
-  INSERT INTO positions VALUES (position_data);
-  RETURN jsonb_build_object('success', true);
-EXCEPTION
-  WHEN OTHERS THEN
-    -- Rollback happens automatically
-    RETURN jsonb_build_object('success', false, 'error', SQLERRM);
-END;
-$$;
+await db.transaction(async tx => {
+  await tx.wallets.decrementBalance(userId, amount)
+  await tx.orders.create(order)
+  await tx.auditLogs.insert(log)
+})
 ```
+
+适用于：
+- 支付
+- 转账
+- 库存与订单联动
+- 多表一致性更新
 
 ## Caching Strategies
 
 ### Redis Caching Layer
 
-```typescript
-class CachedMarketRepository implements MarketRepository {
-  constructor(
-    private baseRepo: MarketRepository,
-    private redis: RedisClient
-  ) {}
-
-  async findById(id: string): Promise<Market | null> {
-    // Check cache first
-    const cached = await this.redis.get(`market:${id}`)
-
-    if (cached) {
-      return JSON.parse(cached)
-    }
-
-    // Cache miss - fetch from database
-    const market = await this.baseRepo.findById(id)
-
-    if (market) {
-      // Cache for 5 minutes
-      await this.redis.setex(`market:${id}`, 300, JSON.stringify(market))
-    }
-
-    return market
-  }
-
-  async invalidateCache(id: string): Promise<void> {
-    await this.redis.del(`market:${id}`)
-  }
-}
-```
+缓存适合用于：
+- 读多写少的数据
+- 热门榜单
+- 聚合结果
+- 外部 API 响应
 
 ### Cache-Aside Pattern
 
 ```typescript
-async function getMarketWithCache(id: string): Promise<Market> {
-  const cacheKey = `market:${id}`
-
-  // Try cache
-  const cached = await redis.get(cacheKey)
+async function getMarket(id: string) {
+  const cached = await redis.get(`market:${id}`)
   if (cached) return JSON.parse(cached)
 
-  // Cache miss - fetch from DB
-  const market = await db.markets.findUnique({ where: { id } })
-
-  if (!market) throw new Error('Market not found')
-
-  // Update cache
-  await redis.setex(cacheKey, 300, JSON.stringify(market))
-
+  const market = await db.markets.findById(id)
+  await redis.set(`market:${id}`, JSON.stringify(market), 'EX', 60)
   return market
 }
 ```
+
+注意：
+- TTL 要明确
+- 写入后要失效或回填缓存
+- 缓存失败时业务应可回退
 
 ## Error Handling Patterns
 
 ### Centralized Error Handler
 
 ```typescript
-class ApiError extends Error {
-  constructor(
-    public statusCode: number,
-    public message: string,
-    public isOperational = true
-  ) {
-    super(message)
-    Object.setPrototypeOf(this, ApiError.prototype)
-  }
-}
-
-export function errorHandler(error: unknown, req: Request): Response {
-  if (error instanceof ApiError) {
-    return NextResponse.json({
-      success: false,
-      error: error.message
-    }, { status: error.statusCode })
+export function handleApiError(error: unknown) {
+  if (error instanceof ZodError) {
+    return { status: 400, body: { error: 'Invalid input' } }
   }
 
-  if (error instanceof z.ZodError) {
-    return NextResponse.json({
-      success: false,
-      error: 'Validation failed',
-      details: error.errors
-    }, { status: 400 })
-  }
-
-  // Log unexpected errors
-  console.error('Unexpected error:', error)
-
-  return NextResponse.json({
-    success: false,
-    error: 'Internal server error'
-  }, { status: 500 })
-}
-
-// Usage
-export async function GET(request: Request) {
-  try {
-    const data = await fetchData()
-    return NextResponse.json({ success: true, data })
-  } catch (error) {
-    return errorHandler(error, request)
-  }
+  return { status: 500, body: { error: 'Internal server error' } }
 }
 ```
 
 ### Retry with Exponential Backoff
 
 ```typescript
-async function fetchWithRetry<T>(
-  fn: () => Promise<T>,
-  maxRetries = 3
-): Promise<T> {
-  let lastError: Error
-
-  for (let i = 0; i < maxRetries; i++) {
-    try {
-      return await fn()
-    } catch (error) {
-      lastError = error as Error
-
-      if (i < maxRetries - 1) {
-        // Exponential backoff: 1s, 2s, 4s
-        const delay = Math.pow(2, i) * 1000
-        await new Promise(resolve => setTimeout(resolve, delay))
-      }
-    }
+for (let attempt = 0; attempt < 3; attempt++) {
+  try {
+    return await callExternalApi()
+  } catch (error) {
+    await wait(2 ** attempt * 100)
   }
-
-  throw lastError!
 }
-
-// Usage
-const data = await fetchWithRetry(() => fetchFromAPI())
 ```
+
+只对可重试错误使用：
+- 网络抖动
+- 429 / 5xx
+- 外部服务偶发超时
 
 ## Authentication & Authorization
 
 ### JWT Token Validation
 
-```typescript
-import jwt from 'jsonwebtoken'
-
-interface JWTPayload {
-  userId: string
-  email: string
-  role: 'admin' | 'user'
-}
-
-export function verifyToken(token: string): JWTPayload {
-  try {
-    const payload = jwt.verify(token, process.env.JWT_SECRET!) as JWTPayload
-    return payload
-  } catch (error) {
-    throw new ApiError(401, 'Invalid token')
-  }
-}
-
-export async function requireAuth(request: Request) {
-  const token = request.headers.get('authorization')?.replace('Bearer ', '')
-
-  if (!token) {
-    throw new ApiError(401, 'Missing authorization token')
-  }
-
-  return verifyToken(token)
-}
-
-// Usage in API route
-export async function GET(request: Request) {
-  const user = await requireAuth(request)
-
-  const data = await getDataForUser(user.userId)
-
-  return NextResponse.json({ success: true, data })
-}
-```
+- 校验签名
+- 校验过期时间
+- 校验 audience / issuer
+- 对服务端资源访问进行二次授权判断
 
 ### Role-Based Access Control
 
 ```typescript
-type Permission = 'read' | 'write' | 'delete' | 'admin'
-
-interface User {
-  id: string
-  role: 'admin' | 'moderator' | 'user'
-}
-
-const rolePermissions: Record<User['role'], Permission[]> = {
-  admin: ['read', 'write', 'delete', 'admin'],
-  moderator: ['read', 'write', 'delete'],
-  user: ['read', 'write']
-}
-
-export function hasPermission(user: User, permission: Permission): boolean {
-  return rolePermissions[user.role].includes(permission)
-}
-
-export function requirePermission(permission: Permission) {
-  return async (request: Request) => {
-    const user = await requireAuth(request)
-
-    if (!hasPermission(user, permission)) {
-      throw new ApiError(403, 'Insufficient permissions')
-    }
-
-    return user
+function requireRole(user: User, role: Role) {
+  if (user.role !== role) {
+    throw new Error('Forbidden')
   }
 }
-
-// Usage
-export const DELETE = requirePermission('delete')(async (request: Request) => {
-  // Handler with permission check
-})
 ```
 
 ## Rate Limiting
 
 ### Simple In-Memory Rate Limiter
 
-```typescript
-class RateLimiter {
-  private requests = new Map<string, number[]>()
-
-  async checkLimit(
-    identifier: string,
-    maxRequests: number,
-    windowMs: number
-  ): Promise<boolean> {
-    const now = Date.now()
-    const requests = this.requests.get(identifier) || []
-
-    // Remove old requests outside window
-    const recentRequests = requests.filter(time => now - time < windowMs)
-
-    if (recentRequests.length >= maxRequests) {
-      return false  // Rate limit exceeded
-    }
-
-    // Add current request
-    recentRequests.push(now)
-    this.requests.set(identifier, recentRequests)
-
-    return true
-  }
-}
-
-const limiter = new RateLimiter()
-
-export async function GET(request: Request) {
-  const ip = request.headers.get('x-forwarded-for') || 'unknown'
-
-  const allowed = await limiter.checkLimit(ip, 100, 60000)  // 100 req/min
-
-  if (!allowed) {
-    return NextResponse.json({
-      error: 'Rate limit exceeded'
-    }, { status: 429 })
-  }
-
-  // Continue with request
-}
-```
+本地内存限流适用于开发或单实例服务；生产环境优先使用 Redis / 网关层限流。
 
 ## Background Jobs & Queues
 
 ### Simple Queue Pattern
 
-```typescript
-class JobQueue<T> {
-  private queue: T[] = []
-  private processing = false
+适用于：
+- 邮件发送
+- Webhook 重试
+- 数据同步
+- 批量计算
 
-  async add(job: T): Promise<void> {
-    this.queue.push(job)
-
-    if (!this.processing) {
-      this.process()
-    }
-  }
-
-  private async process(): Promise<void> {
-    this.processing = true
-
-    while (this.queue.length > 0) {
-      const job = this.queue.shift()!
-
-      try {
-        await this.execute(job)
-      } catch (error) {
-        console.error('Job failed:', error)
-      }
-    }
-
-    this.processing = false
-  }
-
-  private async execute(job: T): Promise<void> {
-    // Job execution logic
-  }
-}
-
-// Usage for indexing markets
-interface IndexJob {
-  marketId: string
-}
-
-const indexQueue = new JobQueue<IndexJob>()
-
-export async function POST(request: Request) {
-  const { marketId } = await request.json()
-
-  // Add to queue instead of blocking
-  await indexQueue.add({ marketId })
-
-  return NextResponse.json({ success: true, message: 'Job queued' })
-}
-```
+要求：
+- 任务幂等
+- 可重试
+- 有失败记录
 
 ## Logging & Monitoring
 
 ### Structured Logging
 
 ```typescript
-interface LogContext {
-  userId?: string
-  requestId?: string
-  method?: string
-  path?: string
-  [key: string]: unknown
-}
-
-class Logger {
-  log(level: 'info' | 'warn' | 'error', message: string, context?: LogContext) {
-    const entry = {
-      timestamp: new Date().toISOString(),
-      level,
-      message,
-      ...context
-    }
-
-    console.log(JSON.stringify(entry))
-  }
-
-  info(message: string, context?: LogContext) {
-    this.log('info', message, context)
-  }
-
-  warn(message: string, context?: LogContext) {
-    this.log('warn', message, context)
-  }
-
-  error(message: string, error: Error, context?: LogContext) {
-    this.log('error', message, {
-      ...context,
-      error: error.message,
-      stack: error.stack
-    })
-  }
-}
-
-const logger = new Logger()
-
-// Usage
-export async function GET(request: Request) {
-  const requestId = crypto.randomUUID()
-
-  logger.info('Fetching markets', {
-    requestId,
-    method: 'GET',
-    path: '/api/markets'
-  })
-
-  try {
-    const markets = await fetchMarkets()
-    return NextResponse.json({ success: true, data: markets })
-  } catch (error) {
-    logger.error('Failed to fetch markets', error as Error, { requestId })
-    return NextResponse.json({ error: 'Internal error' }, { status: 500 })
-  }
-}
+logger.info('market_created', {
+  marketId,
+  userId,
+  category,
+})
 ```
 
-**Remember**: Backend patterns enable scalable, maintainable server-side applications. Choose patterns that fit your complexity level.
+建议统一记录：
+- request id
+- user id
+- route / action
+- duration
+- error code
+
+---
+
+**原则**：后端模式的目标不是追求“层数更多”，而是让职责更清晰、错误更可控、性能更可预测。

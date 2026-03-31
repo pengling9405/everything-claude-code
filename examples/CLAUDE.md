@@ -1,21 +1,21 @@
-# Example Project CLAUDE.md
+# 示例项目 CLAUDE.md
 
-This is an example project-level CLAUDE.md file. Place this in your project root.
+这是一个项目级 `CLAUDE.md` 示例文件。把它放在项目根目录即可。
 
-## Project Overview
+## 项目概览
 
-[Brief description of your project - what it does, tech stack]
+[简要描述你的项目，包括它做什么、技术栈是什么]
 
-## Critical Rules
+## 关键规则
 
-### 1. Code Organization
+### 1. 代码组织
 
 - Many small files over few large files
 - High cohesion, low coupling
 - 200-400 lines typical, 800 max per file
 - Organize by feature/domain, not by type
 
-### 2. Code Style
+### 2. 代码风格
 
 - No emojis in code, comments, or documentation
 - Immutability always - never mutate objects or arrays
@@ -23,7 +23,7 @@ This is an example project-level CLAUDE.md file. Place this in your project root
 - Proper error handling with try/catch
 - Input validation with Zod or similar
 
-### 3. Testing
+### 3. 测试
 
 - TDD: Write tests first
 - 80% minimum coverage
@@ -31,7 +31,7 @@ This is an example project-level CLAUDE.md file. Place this in your project root
 - Integration tests for APIs
 - E2E tests for critical flows
 
-### 4. Security
+### 4. 安全
 
 - No hardcoded secrets
 - Environment variables for sensitive data
@@ -39,7 +39,7 @@ This is an example project-level CLAUDE.md file. Place this in your project root
 - Parameterized queries only
 - CSRF protection enabled
 
-## File Structure
+## 文件结构
 
 ```
 src/
@@ -50,9 +50,9 @@ src/
 |-- types/            # TypeScript definitions
 ```
 
-## Key Patterns
+## 关键模式
 
-### API Response Format
+### API 返回格式
 
 ```typescript
 interface ApiResponse<T> {
@@ -62,7 +62,7 @@ interface ApiResponse<T> {
 }
 ```
 
-### Error Handling
+### 错误处理
 
 ```typescript
 try {
@@ -74,27 +74,27 @@ try {
 }
 ```
 
-## Environment Variables
+## 环境变量
 
 ```bash
-# Required
+# 必填
 DATABASE_URL=
 API_KEY=
 
-# Optional
+# 可选
 DEBUG=false
 ```
 
-## Available Commands
+## 可用命令
 
-- `/tdd` - Test-driven development workflow
-- `/plan` - Create implementation plan
-- `/code-review` - Review code quality
-- `/build-fix` - Fix build errors
+- `/tdd`：测试驱动开发工作流
+- `/plan`：创建实施计划
+- `/code-review`：审查代码质量
+- `/build-fix`：修复构建错误
 
-## Git Workflow
+## Git 工作流
 
-- Conventional commits: `feat:`, `fix:`, `refactor:`, `docs:`, `test:`
-- Never commit to main directly
-- PRs require review
-- All tests must pass before merge
+- 使用 conventional commits：`feat:`、`fix:`、`refactor:`、`docs:`、`test:`
+- 不要直接向 `main` 提交
+- PR 必须经过审查
+- 合并前必须保证测试通过

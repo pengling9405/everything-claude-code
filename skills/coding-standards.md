@@ -1,49 +1,47 @@
 ---
 name: coding-standards
-description: Universal coding standards, best practices, and patterns for TypeScript, JavaScript, React, and Node.js development.
+description: 适用于 TypeScript、JavaScript、React 与 Node.js 的通用编码规范、最佳实践与常见模式。
 ---
 
 # Coding Standards & Best Practices
 
-Universal coding standards applicable across all projects.
+适用于大多数项目的通用编码规范。
 
 ## Code Quality Principles
 
 ### 1. Readability First
-- Code is read more than written
-- Clear variable and function names
-- Self-documenting code preferred over comments
-- Consistent formatting
+- 代码被阅读的次数远多于被编写
+- 变量名和函数名要清晰
+- 优先写自解释代码，而不是依赖注释
+- 保持统一格式
 
 ### 2. KISS (Keep It Simple, Stupid)
-- Simplest solution that works
-- Avoid over-engineering
-- No premature optimization
-- Easy to understand > clever code
+- 选择能工作的最简单方案
+- 避免过度设计
+- 不做过早优化
+- 易懂胜过“聪明”
 
 ### 3. DRY (Don't Repeat Yourself)
-- Extract common logic into functions
-- Create reusable components
-- Share utilities across modules
-- Avoid copy-paste programming
+- 抽出公共逻辑
+- 组件与工具函数尽量复用
+- 避免复制粘贴式编程
 
 ### 4. YAGNI (You Aren't Gonna Need It)
-- Don't build features before they're needed
-- Avoid speculative generality
-- Add complexity only when required
-- Start simple, refactor when needed
+- 不要提前实现未来可能用到的功能
+- 避免投机性的通用化
+- 复杂度只在确有需要时引入
 
 ## TypeScript/JavaScript Standards
 
 ### Variable Naming
 
 ```typescript
-// ✅ GOOD: Descriptive names
+// ✅ 清晰命名
 const marketSearchQuery = 'election'
 const isUserAuthenticated = true
 const totalRevenue = 1000
 
-// ❌ BAD: Unclear names
+// ❌ 模糊命名
 const q = 'election'
 const flag = true
 const x = 1000
@@ -52,43 +50,37 @@ const x = 1000
 ### Function Naming
 
 ```typescript
-// ✅ GOOD: Verb-noun pattern
-async function fetchMarketData(marketId: string) { }
-function calculateSimilarity(a: number[], b: number[]) { }
-function isValidEmail(email: string): boolean { }
-
-// ❌ BAD: Unclear or noun-only
-async function market(id: string) { }
-function similarity(a, b) { }
-function email(e) { }
+// ✅ 动词 + 名词
+async function fetchMarketData(marketId: string) {}
+function calculateSimilarity(a: number[], b: number[]) {}
+function isValidEmail(email: string): boolean {}
 ```
 
 ### Immutability Pattern (CRITICAL)
 
 ```typescript
-// ✅ ALWAYS use spread operator
+// ✅ 优先不可变更新
 const updatedUser = {
   ...user,
-  name: 'New Name'
+  name: 'New Name',
 }
 
 const updatedArray = [...items, newItem]
 
-// ❌ NEVER mutate directly
-user.name = 'New Name'  // BAD
-items.push(newItem)     // BAD
+// ❌ 避免直接修改
+user.name = 'New Name'
+items.push(newItem)
 ```
 
 ### Error Handling
 
 ```typescript
-// ✅ GOOD: Comprehensive error handling
 async function fetchData(url: string) {
   try {
     const response = await fetch(url)
 
     if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+      throw new Error(`HTTP ${response.status}`)
     }
 
     return await response.json()
@@ -97,424 +89,126 @@ async function fetchData(url: string) {
     throw new Error('Failed to fetch data')
   }
 }
-
-// ❌ BAD: No error handling
-async function fetchData(url) {
-  const response = await fetch(url)
-  return response.json()
-}
 ```
 
 ### Async/Await Best Practices
 
 ```typescript
-// ✅ GOOD: Parallel execution when possible
+// ✅ 可并行时并行
 const [users, markets, stats] = await Promise.all([
   fetchUsers(),
   fetchMarkets(),
-  fetchStats()
+  fetchStats(),
 ])
-
-// ❌ BAD: Sequential when unnecessary
-const users = await fetchUsers()
-const markets = await fetchMarkets()
-const stats = await fetchStats()
 ```
 
 ### Type Safety
 
-```typescript
-// ✅ GOOD: Proper types
-interface Market {
-  id: string
-  name: string
-  status: 'active' | 'resolved' | 'closed'
-  created_at: Date
-}
-
-function getMarket(id: string): Promise<Market> {
-  // Implementation
-}
-
-// ❌ BAD: Using 'any'
-function getMarket(id: any): Promise<any> {
-  // Implementation
-}
-```
+- 开启严格模式
+- 避免 `any`
+- 用类型守卫和 schema 校验外部输入
+- 对公共 API 明确返回类型
 
 ## React Best Practices
 
 ### Component Structure
-
-```typescript
-// ✅ GOOD: Functional component with types
-interface ButtonProps {
-  children: React.ReactNode
-  onClick: () => void
-  disabled?: boolean
-  variant?: 'primary' | 'secondary'
-}
-
-export function Button({
-  children,
-  onClick,
-  disabled = false,
-  variant = 'primary'
-}: ButtonProps) {
-  return (
-    <button
-      onClick={onClick}
-      disabled={disabled}
-      className={`btn btn-${variant}`}
-    >
-      {children}
-    </button>
-  )
-}
-
-// ❌ BAD: No types, unclear structure
-export function Button(props) {
-  return <button onClick={props.onClick}>{props.children}</button>
-}
-```
+- 单个组件只承担单一职责
+- props 命名清晰
+- 组件体不要堆过多副作用
 
 ### Custom Hooks
-
-```typescript
-// ✅ GOOD: Reusable custom hook
-export function useDebounce<T>(value: T, delay: number): T {
-  const [debouncedValue, setDebouncedValue] = useState<T>(value)
-
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedValue(value)
-    }, delay)
-
-    return () => clearTimeout(handler)
-  }, [value, delay])
-
-  return debouncedValue
-}
-
-// Usage
-const debouncedQuery = useDebounce(searchQuery, 500)
-```
+- 将可复用状态逻辑抽进 hook
+- hook 名称以 `use` 开头
+- hook 内部管理副作用与状态
 
 ### State Management
-
-```typescript
-// ✅ GOOD: Proper state updates
-const [count, setCount] = useState(0)
-
-// Functional update for state based on previous state
-setCount(prev => prev + 1)
-
-// ❌ BAD: Direct state reference
-setCount(count + 1)  // Can be stale in async scenarios
-```
+- 本地状态优先本地管理
+- 跨组件共享再提升为 context / store
+- 不要把一切都塞进全局状态
 
 ### Conditional Rendering
-
-```typescript
-// ✅ GOOD: Clear conditional rendering
-{isLoading && <Spinner />}
-{error && <ErrorMessage error={error} />}
-{data && <DataDisplay data={data} />}
-
-// ❌ BAD: Ternary hell
-{isLoading ? <Spinner /> : error ? <ErrorMessage error={error} /> : data ? <DataDisplay data={data} /> : null}
-```
+- 让分支清晰
+- 对 loading / empty / error 状态显式建模
 
 ## API Design Standards
 
 ### REST API Conventions
 
-```
-GET    /api/markets              # List all markets
-GET    /api/markets/:id          # Get specific market
-POST   /api/markets              # Create new market
-PUT    /api/markets/:id          # Update market (full)
-PATCH  /api/markets/:id          # Update market (partial)
-DELETE /api/markets/:id          # Delete market
-
-# Query parameters for filtering
-GET /api/markets?status=active&limit=10&offset=0
+```typescript
+// Query 参数用于筛选 / 排序 / 分页
+GET /api/markets?status=active&sort=volume&limit=20
 ```
 
 ### Response Format
 
-```typescript
-// ✅ GOOD: Consistent response structure
-interface ApiResponse<T> {
-  success: boolean
-  data?: T
-  error?: string
-  meta?: {
-    total: number
-    page: number
-    limit: number
-  }
-}
-
-// Success response
-return NextResponse.json({
-  success: true,
-  data: markets,
-  meta: { total: 100, page: 1, limit: 10 }
-})
-
-// Error response
-return NextResponse.json({
-  success: false,
-  error: 'Invalid request'
-}, { status: 400 })
-```
+- 成功与失败结构统一
+- 错误码与错误消息清晰
+- 不向客户端暴露内部异常细节
 
 ### Input Validation
 
-```typescript
-import { z } from 'zod'
-
-// ✅ GOOD: Schema validation
-const CreateMarketSchema = z.object({
-  name: z.string().min(1).max(200),
-  description: z.string().min(1).max(2000),
-  endDate: z.string().datetime(),
-  categories: z.array(z.string()).min(1)
-})
-
-export async function POST(request: Request) {
-  const body = await request.json()
-
-  try {
-    const validated = CreateMarketSchema.parse(body)
-    // Proceed with validated data
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json({
-        success: false,
-        error: 'Validation failed',
-        details: error.errors
-      }, { status: 400 })
-    }
-  }
-}
-```
+- 所有外部输入都要校验
+- 在边界层做 schema 校验
+- 不信任前端传入数据
 
 ## File Organization
 
 ### Project Structure
-
-```
-src/
-├── app/                    # Next.js App Router
-│   ├── api/               # API routes
-│   ├── markets/           # Market pages
-│   └── (auth)/           # Auth pages (route groups)
-├── components/            # React components
-│   ├── ui/               # Generic UI components
-│   ├── forms/            # Form components
-│   └── layouts/          # Layout components
-├── hooks/                # Custom React hooks
-├── lib/                  # Utilities and configs
-│   ├── api/             # API clients
-│   ├── utils/           # Helper functions
-│   └── constants/       # Constants
-├── types/                # TypeScript types
-└── styles/              # Global styles
-```
+- 功能分组优于技术分组时，优先按功能划分
+- 共享代码与业务代码分离
 
 ### File Naming
-
-```
-components/Button.tsx          # PascalCase for components
-hooks/useAuth.ts              # camelCase with 'use' prefix
-lib/formatDate.ts             # camelCase for utilities
-types/market.types.ts         # camelCase with .types suffix
-```
+- 文件名与导出名称保持一致
+- React 组件使用 PascalCase
+- 工具函数文件使用 kebab-case 或 camelCase，保持项目一致
 
 ## Comments & Documentation
 
 ### When to Comment
-
-```typescript
-// ✅ GOOD: Explain WHY, not WHAT
-// Use exponential backoff to avoid overwhelming the API during outages
-const delay = Math.min(1000 * Math.pow(2, retryCount), 30000)
-
-// Deliberately using mutation here for performance with large arrays
-items.push(newItem)
-
-// ❌ BAD: Stating the obvious
-// Increment counter by 1
-count++
-
-// Set name to user's name
-name = user.name
-```
+- 解释“为什么”
+- 记录反直觉约束
+- 说明外部系统兼容原因
 
 ### JSDoc for Public APIs
-
-```typescript
-/**
- * Searches markets using semantic similarity.
- *
- * @param query - Natural language search query
- * @param limit - Maximum number of results (default: 10)
- * @returns Array of markets sorted by similarity score
- * @throws {Error} If OpenAI API fails or Redis unavailable
- *
- * @example
- * ```typescript
- * const results = await searchMarkets('election', 5)
- * console.log(results[0].name) // "Trump vs Biden"
- * ```
- */
-export async function searchMarkets(
-  query: string,
-  limit: number = 10
-): Promise<Market[]> {
-  // Implementation
-}
-```
+- 公共函数、类、hook、组件应补充 JSDoc
+- 重点写参数、返回值、边界与副作用
 
 ## Performance Best Practices
 
 ### Memoization
-
-```typescript
-import { useMemo, useCallback } from 'react'
-
-// ✅ GOOD: Memoize expensive computations
-const sortedMarkets = useMemo(() => {
-  return markets.sort((a, b) => b.volume - a.volume)
-}, [markets])
-
-// ✅ GOOD: Memoize callbacks
-const handleSearch = useCallback((query: string) => {
-  setSearchQuery(query)
-}, [])
-```
+- 只在真实热点路径使用 memoization
+- 不要为了“看起来专业”而滥用
 
 ### Lazy Loading
-
-```typescript
-import { lazy, Suspense } from 'react'
-
-// ✅ GOOD: Lazy load heavy components
-const HeavyChart = lazy(() => import('./HeavyChart'))
-
-export function Dashboard() {
-  return (
-    <Suspense fallback={<Spinner />}>
-      <HeavyChart />
-    </Suspense>
-  )
-}
-```
+- 对大页面、图表、编辑器等重型模块启用懒加载
 
 ### Database Queries
-
-```typescript
-// ✅ GOOD: Select only needed columns
-const { data } = await supabase
-  .from('markets')
-  .select('id, name, status')
-  .limit(10)
-
-// ❌ BAD: Select everything
-const { data } = await supabase
-  .from('markets')
-  .select('*')
-```
+- 避免 N+1
+- 少查字段
+- 把聚合尽量下推到数据库
 
 ## Testing Standards
 
 ### Test Structure (AAA Pattern)
-
-```typescript
-test('calculates similarity correctly', () => {
-  // Arrange
-  const vector1 = [1, 0, 0]
-  const vector2 = [0, 1, 0]
-
-  // Act
-  const similarity = calculateCosineSimilarity(vector1, vector2)
-
-  // Assert
-  expect(similarity).toBe(0)
-})
-```
+- Arrange
+- Act
+- Assert
 
 ### Test Naming
-
-```typescript
-// ✅ GOOD: Descriptive test names
-test('returns empty array when no markets match query', () => { })
-test('throws error when OpenAI API key is missing', () => { })
-test('falls back to substring search when Redis unavailable', () => { })
-
-// ❌ BAD: Vague test names
-test('works', () => { })
-test('test search', () => { })
-```
+- 名称应准确描述行为与预期
+- 优先写“should ... when ...”这类可读句式
 
 ## Code Smell Detection
 
-Watch for these anti-patterns:
-
 ### 1. Long Functions
-```typescript
-// ❌ BAD: Function > 50 lines
-function processMarketData() {
-  // 100 lines of code
-}
-
-// ✅ GOOD: Split into smaller functions
-function processMarketData() {
-  const validated = validateData()
-  const transformed = transformData(validated)
-  return saveData(transformed)
-}
-```
+- 超过 50 行要检查是否职责过多
 
 ### 2. Deep Nesting
-```typescript
-// ❌ BAD: 5+ levels of nesting
-if (user) {
-  if (user.isAdmin) {
-    if (market) {
-      if (market.isActive) {
-        if (hasPermission) {
-          // Do something
-        }
-      }
-    }
-  }
-}
-
-// ✅ GOOD: Early returns
-if (!user) return
-if (!user.isAdmin) return
-if (!market) return
-if (!market.isActive) return
-if (!hasPermission) return
-
-// Do something
-```
+- 嵌套超过 4 层要考虑提前返回或拆函数
 
 ### 3. Magic Numbers
-```typescript
-// ❌ BAD: Unexplained numbers
-if (retryCount > 3) { }
-setTimeout(callback, 500)
+- 常量需要命名，不要无说明地散落数字
 
-// ✅ GOOD: Named constants
-const MAX_RETRIES = 3
-const DEBOUNCE_DELAY_MS = 500
+---
 
-if (retryCount > MAX_RETRIES) { }
-setTimeout(callback, DEBOUNCE_DELAY_MS)
-```
-
-**Remember**: Code quality is not negotiable. Clear, maintainable code enables rapid development and confident refactoring.
+**原则**：规范的目的不是让代码更“整齐”，而是让未来的修改更安全、更低成本。

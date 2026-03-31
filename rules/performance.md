@@ -1,30 +1,30 @@
 # Performance Optimization
 
-## Model Selection Strategy
+## 模型选择策略
 
-**Haiku 4.5** (90% of Sonnet capability, 3x cost savings):
+**Haiku 4.5**（约 90% 的 Sonnet 能力，成本节省约 3 倍）：
 - Lightweight agents with frequent invocation
 - Pair programming and code generation
 - Worker agents in multi-agent systems
 
-**Sonnet 4.5** (Best coding model):
+**Sonnet 4.5**（最佳编码模型）：
 - Main development work
 - Orchestrating multi-agent workflows
 - Complex coding tasks
 
-**Opus 4.5** (Deepest reasoning):
+**Opus 4.5**（最强深度推理）：
 - Complex architectural decisions
 - Maximum reasoning requirements
 - Research and analysis tasks
 
-## Context Window Management
+## 上下文窗口管理
 
-Avoid last 20% of context window for:
+以下场景应避免把上下文窗口用到最后 20%：
 - Large-scale refactoring
 - Feature implementation spanning multiple files
 - Debugging complex interactions
 
-Lower context sensitivity tasks:
+对上下文敏感度较低的任务：
 - Single-file edits
 - Independent utility creation
 - Documentation updates
@@ -32,16 +32,16 @@ Lower context sensitivity tasks:
 
 ## Ultrathink + Plan Mode
 
-For complex tasks requiring deep reasoning:
-1. Use `ultrathink` for enhanced thinking
-2. Enable **Plan Mode** for structured approach
-3. "Rev the engine" with multiple critique rounds
-4. Use split role sub-agents for diverse analysis
+对于需要深度推理的复杂任务：
+1. 用 `ultrathink` 增强思考深度
+2. 开启 **Plan Mode** 形成结构化路径
+3. 通过多轮批判性审视“把引擎转起来”
+4. 用不同角色的子代理做多视角分析
 
-## Build Troubleshooting
+## 构建排障
 
-If build fails:
-1. Use **build-error-resolver** agent
-2. Analyze error messages
-3. Fix incrementally
-4. Verify after each fix
+如果构建失败：
+1. 使用 **build-error-resolver**
+2. 分析错误信息
+3. 逐步修复
+4. 每修一次都重新验证

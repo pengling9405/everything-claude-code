@@ -1,22 +1,26 @@
 ---
 name: clickhouse-io
-description: ClickHouse database patterns, query optimization, analytics, and data engineering best practices for high-performance analytical workloads.
+description: 面向高性能分析场景的 ClickHouse 数据模式、查询优化、分析建模与数据工程最佳实践。
 ---
 
 # ClickHouse Analytics Patterns
 
-ClickHouse-specific patterns for high-performance analytics and data engineering.
+适用于高吞吐分析场景的 ClickHouse 模式与实践。
 
 ## Overview
 
-ClickHouse is a column-oriented database management system (DBMS) for online analytical processing (OLAP). It's optimized for fast analytical queries on large datasets.
+ClickHouse 是面向 OLAP 的列式数据库，适合：
+- 大规模分析查询
+- 事件流与埋点分析
+- 漏斗、留存、队列聚合
+- 实时看板与报表
 
-**Key Features:**
-- Column-oriented storage
-- Data compression
-- Parallel query execution
-- Distributed queries
-- Real-time analytics
+**核心特点：**
+- 列式存储
+- 高压缩率
+- 并行执行
+- 分布式查询
+- 适合追加写入
 
 ## Table Design Patterns
 
@@ -26,11 +30,8 @@ ClickHouse is a column-oriented database management system (DBMS) for online ana
 CREATE TABLE markets_analytics (
     date Date,
     market_id String,
-    market_name String,
     volume UInt64,
     trades UInt32,
-    unique_traders UInt32,
-    avg_trade_size Float64,
     created_at DateTime
 ) ENGINE = MergeTree()
 PARTITION BY toYYYYMM(date)
@@ -38,392 +39,187 @@ ORDER BY (date, market_id)
 SETTINGS index_granularity = 8192;
 ```
 
+适合大多数事实表。
+
 ### ReplacingMergeTree (Deduplication)
 
 ```sql
--- For data that may have duplicates (e.g., from multiple sources)
 CREATE TABLE user_events (
     event_id String,
     user_id String,
     event_type String,
-    timestamp DateTime,
-    properties String
+    timestamp DateTime
 ) ENGINE = ReplacingMergeTree()
 PARTITION BY toYYYYMM(timestamp)
-ORDER BY (user_id, event_id, timestamp)
-PRIMARY KEY (user_id, event_id);
+ORDER BY (user_id, event_id, timestamp);
 ```
+
+适合多源写入、可能重复的事件数据。
 
 ### AggregatingMergeTree (Pre-aggregation)
 
 ```sql
--- For maintaining aggregated metrics
 CREATE TABLE market_stats_hourly (
     hour DateTime,
     market_id String,
     total_volume AggregateFunction(sum, UInt64),
-    total_trades AggregateFunction(count, UInt32),
-    unique_users AggregateFunction(uniq, String)
+    total_trades AggregateFunction(count, UInt32)
 ) ENGINE = AggregatingMergeTree()
 PARTITION BY toYYYYMM(hour)
 ORDER BY (hour, market_id);
-
--- Query aggregated data
-SELECT
-    hour,
-    market_id,
-    sumMerge(total_volume) AS volume,
-    countMerge(total_trades) AS trades,
-    uniqMerge(unique_users) AS users
-FROM market_stats_hourly
-WHERE hour >= toStartOfHour(now() - INTERVAL 24 HOUR)
-GROUP BY hour, market_id
-ORDER BY hour DESC;
 ```
+
+适合预聚合，减少实时大查询成本。
 
 ## Query Optimization Patterns
 
 ### Efficient Filtering
 
 ```sql
--- ✅ GOOD: Use indexed columns first
+-- ✅ 优先利用分区与排序键
 SELECT *
 FROM markets_analytics
 WHERE date >= '2025-01-01'
   AND market_id = 'market-123'
-  AND volume > 1000
 ORDER BY date DESC
 LIMIT 100;
-
--- ❌ BAD: Filter on non-indexed columns first
-SELECT *
-FROM markets_analytics
-WHERE volume > 1000
-  AND market_name LIKE '%election%'
-  AND date >= '2025-01-01';
 ```
+
+建议：
+- 先按分区裁剪，再按排序键过滤
+- 少用无法命中索引的模糊条件
+- 避免无上限的大范围扫描
 
 ### Aggregations
 
 ```sql
--- ✅ GOOD: Use ClickHouse-specific aggregation functions
 SELECT
     toStartOfDay(created_at) AS day,
     market_id,
     sum(volume) AS total_volume,
     count() AS total_trades,
-    uniq(trader_id) AS unique_traders,
-    avg(trade_size) AS avg_size
+    uniq(trader_id) AS unique_traders
 FROM trades
 WHERE created_at >= today() - INTERVAL 7 DAY
 GROUP BY day, market_id
-ORDER BY day DESC, total_volume DESC;
-
--- ✅ Use quantile for percentiles (more efficient than percentile)
-SELECT
-    quantile(0.50)(trade_size) AS median,
-    quantile(0.95)(trade_size) AS p95,
-    quantile(0.99)(trade_size) AS p99
-FROM trades
-WHERE created_at >= now() - INTERVAL 1 HOUR;
+ORDER BY day DESC;
 ```
+
+优先使用 ClickHouse 自带聚合函数，而不是把明细拉回应用层处理。
 
 ### Window Functions
 
-```sql
--- Calculate running totals
-SELECT
-    date,
-    market_id,
-    volume,
-    sum(volume) OVER (
-        PARTITION BY market_id
-        ORDER BY date
-        ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
-    ) AS cumulative_volume
-FROM markets_analytics
-WHERE date >= today() - INTERVAL 30 DAY
-ORDER BY market_id, date;
-```
+适合：
+- 排名
+- 移动平均
+- 累积值
+- 分组内比较
 
 ## Data Insertion Patterns
 
 ### Bulk Insert (Recommended)
 
-```typescript
-import { ClickHouse } from 'clickhouse'
+批量写入优于逐条写入，尤其是事件与日志数据。
 
-const clickhouse = new ClickHouse({
-  url: process.env.CLICKHOUSE_URL,
-  port: 8123,
-  basicAuth: {
-    username: process.env.CLICKHOUSE_USER,
-    password: process.env.CLICKHOUSE_PASSWORD
-  }
-})
-
-// ✅ Batch insert (efficient)
-async function bulkInsertTrades(trades: Trade[]) {
-  const values = trades.map(trade => `(
-    '${trade.id}',
-    '${trade.market_id}',
-    '${trade.user_id}',
-    ${trade.amount},
-    '${trade.timestamp.toISOString()}'
-  )`).join(',')
-
-  await clickhouse.query(`
-    INSERT INTO trades (id, market_id, user_id, amount, timestamp)
-    VALUES ${values}
-  `).toPromise()
-}
-
-// ❌ Individual inserts (slow)
-async function insertTrade(trade: Trade) {
-  // Don't do this in a loop!
-  await clickhouse.query(`
-    INSERT INTO trades VALUES ('${trade.id}', ...)
-  `).toPromise()
-}
-```
+建议：
+- 按批次写
+- 统一 schema
+- 做幂等或去重设计
 
 ### Streaming Insert
 
-```typescript
-// For continuous data ingestion
-import { createWriteStream } from 'fs'
-import { pipeline } from 'stream/promises'
-
-async function streamInserts() {
-  const stream = clickhouse.insert('trades').stream()
-
-  for await (const batch of dataSource) {
-    stream.write(batch)
-  }
-
-  await stream.end()
-}
-```
+适用于实时埋点流，但要控制小批次数量，避免过多碎片 part。
 
 ## Materialized Views
 
 ### Real-time Aggregations
 
-```sql
--- Create materialized view for hourly stats
-CREATE MATERIALIZED VIEW market_stats_hourly_mv
-TO market_stats_hourly
-AS SELECT
-    toStartOfHour(timestamp) AS hour,
-    market_id,
-    sumState(amount) AS total_volume,
-    countState() AS total_trades,
-    uniqState(user_id) AS unique_users
-FROM trades
-GROUP BY hour, market_id;
-
--- Query the materialized view
-SELECT
-    hour,
-    market_id,
-    sumMerge(total_volume) AS volume,
-    countMerge(total_trades) AS trades,
-    uniqMerge(unique_users) AS users
-FROM market_stats_hourly
-WHERE hour >= now() - INTERVAL 24 HOUR
-GROUP BY hour, market_id;
-```
+用物化视图把明细流实时汇总成：
+- 小时统计
+- 用户级聚合
+- 漏斗阶段数据
+- 市场维度面板数据
 
 ## Performance Monitoring
 
 ### Query Performance
 
-```sql
--- Check slow queries
-SELECT
-    query_id,
-    user,
-    query,
-    query_duration_ms,
-    read_rows,
-    read_bytes,
-    memory_usage
-FROM system.query_log
-WHERE type = 'QueryFinish'
-  AND query_duration_ms > 1000
-  AND event_time >= now() - INTERVAL 1 HOUR
-ORDER BY query_duration_ms DESC
-LIMIT 10;
-```
+重点观察：
+- query latency
+- scanned rows / bytes
+- memory usage
+- read amplification
 
 ### Table Statistics
 
-```sql
--- Check table sizes
-SELECT
-    database,
-    table,
-    formatReadableSize(sum(bytes)) AS size,
-    sum(rows) AS rows,
-    max(modification_time) AS latest_modification
-FROM system.parts
-WHERE active
-GROUP BY database, table
-ORDER BY sum(bytes) DESC;
-```
+关注：
+- part 数量
+- 分区大小
+- TTL 清理效果
+- merge 压力
 
 ## Common Analytics Queries
 
 ### Time Series Analysis
 
-```sql
--- Daily active users
-SELECT
-    toDate(timestamp) AS date,
-    uniq(user_id) AS daily_active_users
-FROM events
-WHERE timestamp >= today() - INTERVAL 30 DAY
-GROUP BY date
-ORDER BY date;
-
--- Retention analysis
-SELECT
-    signup_date,
-    countIf(days_since_signup = 0) AS day_0,
-    countIf(days_since_signup = 1) AS day_1,
-    countIf(days_since_signup = 7) AS day_7,
-    countIf(days_since_signup = 30) AS day_30
-FROM (
-    SELECT
-        user_id,
-        min(toDate(timestamp)) AS signup_date,
-        toDate(timestamp) AS activity_date,
-        dateDiff('day', signup_date, activity_date) AS days_since_signup
-    FROM events
-    GROUP BY user_id, activity_date
-)
-GROUP BY signup_date
-ORDER BY signup_date DESC;
-```
+适合：
+- DAU / WAU / MAU
+- GMV / volume 趋势
+- 错误数趋势
 
 ### Funnel Analysis
 
-```sql
--- Conversion funnel
-SELECT
-    countIf(step = 'viewed_market') AS viewed,
-    countIf(step = 'clicked_trade') AS clicked,
-    countIf(step = 'completed_trade') AS completed,
-    round(clicked / viewed * 100, 2) AS view_to_click_rate,
-    round(completed / clicked * 100, 2) AS click_to_completion_rate
-FROM (
-    SELECT
-        user_id,
-        session_id,
-        event_type AS step
-    FROM events
-    WHERE event_date = today()
-)
-GROUP BY session_id;
-```
+适合：
+- 访问 → 注册 → 激活 → 支付
+- 曝光 → 点击 → 下单
 
 ### Cohort Analysis
 
-```sql
--- User cohorts by signup month
-SELECT
-    toStartOfMonth(signup_date) AS cohort,
-    toStartOfMonth(activity_date) AS month,
-    dateDiff('month', cohort, month) AS months_since_signup,
-    count(DISTINCT user_id) AS active_users
-FROM (
-    SELECT
-        user_id,
-        min(toDate(timestamp)) OVER (PARTITION BY user_id) AS signup_date,
-        toDate(timestamp) AS activity_date
-    FROM events
-)
-GROUP BY cohort, month, months_since_signup
-ORDER BY cohort, months_since_signup;
-```
+适合：
+- 用户留存
+- 首次交易后复访
+- 版本上线后的行为变化
 
 ## Data Pipeline Patterns
 
 ### ETL Pattern
 
-```typescript
-// Extract, Transform, Load
-async function etlPipeline() {
-  // 1. Extract from source
-  const rawData = await extractFromPostgres()
-
-  // 2. Transform
-  const transformed = rawData.map(row => ({
-    date: new Date(row.created_at).toISOString().split('T')[0],
-    market_id: row.market_slug,
-    volume: parseFloat(row.total_volume),
-    trades: parseInt(row.trade_count)
-  }))
-
-  // 3. Load to ClickHouse
-  await bulkInsertToClickHouse(transformed)
-}
-
-// Run periodically
-setInterval(etlPipeline, 60 * 60 * 1000)  // Every hour
-```
+流程通常为：
+1. 提取源数据
+2. 清洗与标准化
+3. 写入事实表 / 维度表
+4. 生成预聚合表
 
 ### Change Data Capture (CDC)
 
-```typescript
-// Listen to PostgreSQL changes and sync to ClickHouse
-import { Client } from 'pg'
-
-const pgClient = new Client({ connectionString: process.env.DATABASE_URL })
-
-pgClient.query('LISTEN market_updates')
-
-pgClient.on('notification', async (msg) => {
-  const update = JSON.parse(msg.payload)
-
-  await clickhouse.insert('market_updates', [
-    {
-      market_id: update.id,
-      event_type: update.operation,  // INSERT, UPDATE, DELETE
-      timestamp: new Date(),
-      data: JSON.stringify(update.new_data)
-    }
-  ])
-})
-```
+适合：
+- 从业务数据库同步分析库
+- 追踪订单、交易、用户状态变更
 
 ## Best Practices
 
 ### 1. Partitioning Strategy
-- Partition by time (usually month or day)
-- Avoid too many partitions (performance impact)
-- Use DATE type for partition key
+- 用时间字段分区最常见
+- 分区不要过细，否则 part 太多
 
 ### 2. Ordering Key
-- Put most frequently filtered columns first
-- Consider cardinality (high cardinality first)
-- Order impacts compression
+- 优先选择高频过滤 / 聚合字段
+- 按查询模式设计，不按直觉设计
 
 ### 3. Data Types
-- Use smallest appropriate type (UInt32 vs UInt64)
-- Use LowCardinality for repeated strings
-- Use Enum for categorical data
+- 尽量用更紧凑的类型
+- 日期、枚举、整数优先
 
 ### 4. Avoid
-- SELECT * (specify columns)
-- FINAL (merge data before query instead)
-- Too many JOINs (denormalize for analytics)
-- Small frequent inserts (batch instead)
+- 高频小批写入
+- 大量 `SELECT *`
+- 无限制扫描历史全量数据
 
 ### 5. Monitoring
-- Track query performance
-- Monitor disk usage
-- Check merge operations
-- Review slow query log
+- 持续观察慢查询
+- 监控 part 数与 merge 压力
+- 对热点看板提前建预聚合
 
-**Remember**: ClickHouse excels at analytical workloads. Design tables for your query patterns, batch inserts, and leverage materialized views for real-time aggregations.
+---
+
+**原则**：ClickHouse 的性能来自“正确建模 + 正确查询”。不要把它当事务数据库使用，而应把它当高吞吐分析引擎来设计。

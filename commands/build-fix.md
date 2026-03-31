@@ -1,29 +1,31 @@
 # Build and Fix
 
-Incrementally fix TypeScript and build errors:
+逐步修复 TypeScript 与构建错误：
 
-1. Run build: npm run build or pnpm build
+1. 运行构建：
+   - `npm run build`
+   - 或 `pnpm build`
 
-2. Parse error output:
-   - Group by file
-   - Sort by severity
+2. 解析报错输出：
+   - 按文件分组
+   - 按严重程度排序
 
-3. For each error:
-   - Show error context (5 lines before/after)
-   - Explain the issue
-   - Propose fix
-   - Apply fix
-   - Re-run build
-   - Verify error resolved
+3. 对每个错误执行：
+   - 展示错误上下文（前后各 5 行）
+   - 解释问题原因
+   - 提出修复方案
+   - 应用修复
+   - 重新运行构建
+   - 验证错误是否消失
 
-4. Stop if:
-   - Fix introduces new errors
-   - Same error persists after 3 attempts
-   - User requests pause
+4. 在以下情况停止：
+   - 修复引入了新错误
+   - 同一个错误连续 3 次修复后仍存在
+   - 用户要求暂停
 
-5. Show summary:
-   - Errors fixed
-   - Errors remaining
-   - New errors introduced
+5. 输出总结：
+   - 已修复的错误
+   - 剩余错误
+   - 新引入的错误
 
-Fix one error at a time for safety!
+出于安全性考虑，一次只修一个错误。

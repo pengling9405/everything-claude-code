@@ -1,41 +1,41 @@
 ---
-description: Enforce test-driven development workflow. Scaffold interfaces, generate tests FIRST, then implement minimal code to pass. Ensure 80%+ coverage.
+description: 强制执行测试驱动开发工作流。先搭接口、先写测试，再写最小实现让测试通过，并确保覆盖率达到 80% 以上。
 ---
 
 # TDD Command
 
-This command invokes the **tdd-guide** agent to enforce test-driven development methodology.
+这个命令会调用 **tdd-guide** agent，强制执行测试驱动开发方法。
 
-## What This Command Does
+## 这个命令会做什么
 
-1. **Scaffold Interfaces** - Define types/interfaces first
-2. **Generate Tests First** - Write failing tests (RED)
-3. **Implement Minimal Code** - Write just enough to pass (GREEN)
-4. **Refactor** - Improve code while keeping tests green (REFACTOR)
-5. **Verify Coverage** - Ensure 80%+ test coverage
+1. **先搭接口**：优先定义类型 / 接口
+2. **先写测试**：先写失败测试（RED）
+3. **最小实现**：只写刚好能通过测试的实现（GREEN）
+4. **重构**：在保持测试通过的前提下改进代码（REFACTOR）
+5. **检查覆盖率**：确保覆盖率达到 80% 以上
 
-## When to Use
+## 什么时候使用
 
-Use `/tdd` when:
-- Implementing new features
-- Adding new functions/components
-- Fixing bugs (write test that reproduces bug first)
-- Refactoring existing code
-- Building critical business logic
+在以下场景使用 `/tdd`：
+- 开发新功能
+- 新增函数或组件
+- 修 bug（先写一个能复现 bug 的测试）
+- 重构已有代码
+- 编写关键业务逻辑
 
-## How It Works
+## 它如何工作
 
-The tdd-guide agent will:
+tdd-guide agent 会：
 
-1. **Define interfaces** for inputs/outputs
-2. **Write tests that will FAIL** (because code doesn't exist yet)
-3. **Run tests** and verify they fail for the right reason
-4. **Write minimal implementation** to make tests pass
-5. **Run tests** and verify they pass
-6. **Refactor** code while keeping tests green
-7. **Check coverage** and add more tests if below 80%
+1. **定义输入 / 输出接口**
+2. **先写会失败的测试**
+3. **运行测试**并确认它是因为正确原因失败
+4. **写最小实现**让测试通过
+5. **再次运行测试**并确认通过
+6. **重构**同时保持测试为绿
+7. **检查覆盖率**，低于 80% 时补充测试
 
-## TDD Cycle
+## TDD 循环
 
 ```
 RED → GREEN → REFACTOR → REPEAT
@@ -253,11 +253,11 @@ Coverage: 100% ✅ (Target: 80%)
 ✅ TDD session complete!
 ```
 
-## TDD Best Practices
+## TDD 最佳实践
 
-**DO:**
-- ✅ Write the test FIRST, before any implementation
-- ✅ Run tests and verify they FAIL before implementing
+**应做：**
+- ✅ 在写任何实现前先写测试
+- ✅ 在开始实现前先跑一次测试，确认它确实失败
 - ✅ Write minimal code to make tests pass
 - ✅ Refactor only after tests are green
 - ✅ Add edge cases and error scenarios
