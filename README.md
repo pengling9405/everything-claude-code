@@ -1,4 +1,4 @@
-# Everything Claude Code 中文整理版
+# Everything Claude Code 中文版
 
 > 说明：这是中文整理版入口文档，用于帮助中文读者快速理解仓库结构与使用方式。英文原文保持不变。
 
@@ -20,15 +20,15 @@
 
 原仓库作者建议先看两篇配套指南：
 
-1. Shorthand Guide：理解每种配置类型的职责、整体组织方式、上下文管理和基本理念
-2. Longform Guide：理解高级主题，例如 token 优化、session memory、验证闭环、并行化与持续学习
+1. 简版指南（Shorthand Guide）：理解每种配置类型的职责、整体组织方式、上下文管理和基本理念
+2. 长文指南（Longform Guide）：理解高级主题，例如 token 优化、session memory、验证闭环、并行化与持续学习
 
 ## 仓库结构
 
 ```text
 everything-claude-code/
 ├── agents/            # 专项子代理
-├── commands/          # Slash commands
+├── commands/          # 斜杠命令
 ├── contexts/          # 模式化上下文
 ├── examples/          # 示例配置与 session 文件
 ├── hooks/             # Hook 配置与脚本
@@ -159,4 +159,3 @@ cp -r everything-claude-code/skills/* ~/.claude/skills/
 
 - 英文原文：[README.md](/Users/zhanyu/projects/everything-claude-code/README.md)
 - 贡献说明：[CONTRIBUTING.md](/Users/zhanyu/projects/everything-claude-code/CONTRIBUTING.md)
-
