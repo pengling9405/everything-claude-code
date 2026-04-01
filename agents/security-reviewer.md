@@ -48,7 +48,7 @@ npx trufflehog filesystem . --json
 git log -p | grep -i "password\\|api_key\\|secret"
 ```
 
-## Security Review Workflow
+## Security 审查 工作流
 
 ### 1. Initial Scan Phase
 ```text
@@ -120,7 +120,7 @@ b) 再人工看高风险区域
     - 是否配置告警
 ```
 
-### 3. Example Project-Specific Security Checks
+### 3. 示例 Project-Specific Security Checks
 
 **CRITICAL - 如果平台涉及真实资金：**
 
@@ -180,12 +180,12 @@ Solana / Blockchain Security:
 ### 10. Logging Sensitive Data (MEDIUM)
 - 日志输出 token、邮箱、证件号、支付详情
 
-## Security Review Report Format
+## Security 审查 报告 Format
 
 ```markdown
-# Security Review Report
+# Security 审查 报告
 
-## Summary
+## 摘要
 - 审查范围
 - 总体风险等级
 
@@ -217,10 +217,10 @@ Solana / Blockchain Security:
 [后续建议]
 ```
 
-## Pull Request Security Review Template
+## Pull Request Security 审查 Template
 
 ```markdown
-## Security Review
+## Security 审查
 
 ### Blocking Issues
 - [问题 1]

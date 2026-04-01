@@ -2,7 +2,7 @@
 description: 重述需求、评估风险，并生成逐步实施计划。在动任何代码之前，必须等待用户确认。
 ---
 
-# Plan Command
+# 计划 Command
 
 这个命令会调用 **planner** agent，在写任何代码之前先生成一份完整实施计划。
 
@@ -39,7 +39,7 @@ planner agent 会：
 User: /plan I need to add real-time notifications when markets resolve
 
 Agent (planner):
-# Implementation Plan: Real-Time Market Resolution Notifications
+# 实现 计划: Real-Time Market Resolution Notifications
 
 ## Requirements Restatement
 - Send notifications to users when markets they're watching resolve
@@ -47,25 +47,25 @@ Agent (planner):
 - Ensure notifications are delivered reliably
 - Include market outcome and user's position result
 
-## Implementation Phases
+## 实现 Phases
 
-### Phase 1: Database Schema
+### 阶段 1: Database Schema
 - Add notifications table with columns: id, user_id, market_id, type, status, created_at
 - Add user_notification_preferences table for channel preferences
 - Create indexes on user_id and market_id for performance
 
-### Phase 2: Notification Service
+### 阶段 2: Notification Service
 - Create notification service in lib/notifications.ts
 - Implement notification queue using BullMQ/Redis
 - Add retry logic for failed deliveries
 - Create notification templates
 
-### Phase 3: Integration Points
+### 阶段 3: Integration Points
 - Hook into market resolution logic (when status changes to "resolved")
 - Query all users with positions in market
 - Enqueue notifications for each user
 
-### Phase 4: Frontend Components
+### 阶段 4: Frontend Components
 - Create NotificationBell component in header
 - Add NotificationList modal
 - Implement real-time updates via Supabase subscriptions

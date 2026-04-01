@@ -46,15 +46,15 @@ REFACTOR: Improve code, keep tests passing
 REPEAT:   Next feature/scenario
 ```
 
-## Example Usage
+## 示例 Usage
 
 ```
 User: /tdd I need a function to calculate market liquidity score
 
 Agent (tdd-guide):
-# TDD Session: Market Liquidity Score Calculator
+# TDD 会话: Market Liquidity Score Calculator
 
-## Step 1: Define Interface (SCAFFOLD)
+## 步骤 1: Define Interface (SCAFFOLD)
 
 ```typescript
 // lib/liquidity.ts
@@ -71,7 +71,7 @@ export function calculateLiquidityScore(market: MarketData): number {
 }
 ```
 
-## Step 2: Write Failing Test (RED)
+## 步骤 2: Write Failing 测试 (RED)
 
 ```typescript
 // lib/liquidity.test.ts
@@ -121,7 +121,7 @@ describe('calculateLiquidityScore', () => {
 })
 ```
 
-## Step 3: Run Tests - Verify FAIL
+## 步骤 3: Run Tests - Verify FAIL
 
 ```bash
 npm test lib/liquidity.test.ts
@@ -135,7 +135,7 @@ FAIL lib/liquidity.test.ts
 
 ✅ Tests fail as expected. Ready to implement.
 
-## Step 4: Implement Minimal Code (GREEN)
+## 步骤 4: Implement Minimal Code (GREEN)
 
 ```typescript
 // lib/liquidity.ts
@@ -271,7 +271,7 @@ Coverage: 100% ✅ (Target: 80%)
 - ❌ Test implementation details (test behavior)
 - ❌ Mock everything (prefer integration tests)
 
-## Test Types to Include
+## 测试 Types to Include
 
 **Unit Tests** (Function-level):
 - Happy path scenarios

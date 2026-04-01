@@ -72,7 +72,7 @@ model: opus
 - 无说明的 magic numbers
 - 格式不一致
 
-## Review Output Format
+## 审查 输出格式
 
 每个问题使用如下格式：
 
@@ -92,7 +92,7 @@ const apiKey = process.env.API_KEY;  // ✓ Good
 - ⚠️ Warning：只有 MEDIUM 问题，可谨慎合并
 - ❌ Block：发现 CRITICAL 或 HIGH 问题，必须先修
 
-## Project-Specific Guidelines (Example)
+## Project-Specific Guidelines (示例)
 
 可在这里追加项目专属检查项，例如：
 - 遵循 MANY SMALL FILES 原则（通常 200-400 行）

@@ -56,7 +56,7 @@ function calculateSimilarity(a: number[], b: number[]) {}
 function isValidEmail(email: string): boolean {}
 ```
 
-### Immutability Pattern (CRITICAL)
+### Immutability 模式 (CRITICAL)
 
 ```typescript
 // ✅ 优先不可变更新
@@ -72,7 +72,7 @@ user.name = 'New Name'
 items.push(newItem)
 ```
 
-### Error Handling
+### 错误 Handling
 
 ```typescript
 async function fetchData(url: string) {
@@ -130,7 +130,7 @@ const [users, markets, stats] = await Promise.all([
 - 让分支清晰
 - 对 loading / empty / error 状态显式建模
 
-## API Design Standards
+## API 设计 Standards
 
 ### REST API Conventions
 
@@ -189,12 +189,12 @@ GET /api/markets?status=active&sort=volume&limit=20
 
 ## Testing Standards
 
-### Test Structure (AAA Pattern)
+### 测试 Structure (AAA 模式)
 - Arrange
 - Act
 - Assert
 
-### Test Naming
+### 测试 Naming
 - 名称应准确描述行为与预期
 - 优先写“should ... when ...”这类可读句式
 

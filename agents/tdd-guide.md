@@ -1,6 +1,6 @@
 ---
 name: tdd-guide
-description: 测试驱动开发专家，强制执行先写测试的工作方式。开发新功能、修 bug 或重构时应主动使用，并确保覆盖率达到 80%+。
+description: 测试驱动开发专家，强制执行先写测试的工作方式。开发新功能、修 缺陷 或重构时应主动使用，并确保覆盖率达到 80%+。
 tools: Read, Write, Edit, Bash, Grep
 model: opus
 ---
@@ -15,9 +15,9 @@ model: opus
 - 编写完整测试集（单元、集成、E2E）
 - 在实现前识别边界情况
 
-## TDD Workflow
+## TDD 工作流
 
-### Step 1: Write Test First (RED)
+### 步骤 1: Write 测试 First (RED)
 ```typescript
 // 必须从失败测试开始
 describe('searchMarkets', () => {
@@ -31,13 +31,13 @@ describe('searchMarkets', () => {
 })
 ```
 
-### Step 2: Run Test (Verify it FAILS)
+### 步骤 2: Run 测试 (Verify it FAILS)
 ```bash
 npm test
 # 测试此时应失败，因为功能尚未实现
 ```
 
-### Step 3: Write Minimal Implementation (GREEN)
+### 步骤 3: Write Minimal 实现 (GREEN)
 ```typescript
 export async function searchMarkets(query: string) {
   const embedding = await generateEmbedding(query)
@@ -46,7 +46,7 @@ export async function searchMarkets(query: string) {
 }
 ```
 
-### Step 4: Run Test (Verify it PASSES)
+### 步骤 4: Run 测试 (Verify it PASSES)
 ```bash
 npm test
 # 测试现在应通过
@@ -64,7 +64,7 @@ npm run test:coverage
 # 验证覆盖率达到 80%+
 ```
 
-## Test Types You Must Write
+## 测试 Types You Must Write
 
 ### 1. Unit Tests (Mandatory)
 在隔离环境下测试单个函数：
@@ -192,7 +192,7 @@ jest.mock('@/lib/openai', () => ({
 }))
 ```
 
-## Edge Cases You MUST Test
+## Edge Cases You MUST 测试
 
 1. **Null / Undefined**：输入为空时如何处理
 2. **Empty**：空数组、空字符串、空集合
@@ -203,7 +203,7 @@ jest.mock('@/lib/openai', () => ({
 7. **Large Data**：1 万条以上数据时的性能
 8. **Special Characters**：Unicode、emoji、SQL 特殊字符
 
-## Test Quality Checklist
+## 测试 Quality Checklist
 
 测试完成前请逐项确认：
 
@@ -218,15 +218,15 @@ jest.mock('@/lib/openai', () => ({
 - [ ] 断言具体、有意义
 - [ ] 覆盖率达到 80%+，并已实际检查报告
 
-## Test Smells (Anti-Patterns)
+## 测试 Smells (Anti-Patterns)
 
-### ❌ Testing Implementation Details
+### ❌ Testing 实现 Details
 ```typescript
 // 不要测试内部状态
 expect(component.state.count).toBe(5)
 ```
 
-### ✅ Test User-Visible Behavior
+### ✅ 测试 用户-Visible Behavior
 ```typescript
 // 应该测试用户能看到的行为
 expect(screen.getByText('Count: 5')).toBeInTheDocument()
@@ -248,7 +248,7 @@ test('updates user', () => {
 })
 ```
 
-## Coverage Report
+## Coverage 报告
 
 ```bash
 # 带覆盖率运行测试

@@ -58,7 +58,7 @@ cp everything-claude-code/rules/*.md ~/.claude/rules/
 # commands
 cp everything-claude-code/commands/*.md ~/.claude/commands/
 
-# skills
+# 技能
 cp -r everything-claude-code/skills/* ~/.claude/skills/
 ```
 
@@ -88,7 +88,7 @@ cp -r everything-claude-code/skills/* ~/.claude/skills/
 - `security-reviewer`：漏洞发现与修复建议
 - `e2e-runner`：Playwright 端到端测试
 
-### Skills
+### 技能
 
 `skills/` 下的内容是可复用的知识与方法论，例如：
 

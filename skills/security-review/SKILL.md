@@ -3,7 +3,7 @@ name: security-review
 description: 在实现鉴权、处理用户输入、接触 secrets、创建 API、支付或其他敏感功能时使用。提供完整安全检查清单与推荐模式。
 ---
 
-# Security Review Skill
+# Security 审查 技能
 
 这个 skill 用来确保代码遵循安全最佳实践，并主动识别潜在漏洞。
 
@@ -46,7 +46,7 @@ if (!apiKey) {
 
 ### 2. Input Validation
 
-#### Always Validate User Input
+#### Always Validate 用户 Input
 ```typescript
 const CreateUserSchema = z.object({
   email: z.string().email(),
@@ -115,7 +115,7 @@ await db.query(
 - 渲染用户内容前进行清洗
 - 对 `dangerouslySetInnerHTML` 保持零信任
 
-#### Content Security Policy
+#### 内容 Security Policy
 - 配置 CSP，限制脚本来源
 
 #### Verification Steps
@@ -152,7 +152,7 @@ await db.query(
 #### Logging
 - 不记录 token、密码、私钥、支付信息
 
-#### Error Messages
+#### 错误 Messages
 - 不向前端暴露内部实现与栈信息
 
 #### Verification Steps

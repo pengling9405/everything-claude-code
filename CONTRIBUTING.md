@@ -13,7 +13,7 @@
 - DevOps 专家，如 Kubernetes、Terraform、CI/CD
 - 领域专家，如 ML pipeline、数据工程、移动开发
 
-### Skills
+### 技能
 
 适合补充新的技能与方法论，例如：
 
@@ -100,7 +100,7 @@ model: sonnet
 Instructions here...
 ```
 
-#### Skills
+#### 技能
 
 建议清晰说明：
 

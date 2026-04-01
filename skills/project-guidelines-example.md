@@ -1,4 +1,4 @@
-# Project Guidelines Skill (Example)
+# Project Guidelines 技能 (示例)
 
 这是一个项目专属 skill 的示例模板，可作为你在真实项目中编写私有规范时的参考。
 
@@ -17,7 +17,7 @@
 
 ---
 
-## Architecture Overview
+## Architecture 概览
 
 **Tech Stack：**
 - **Frontend**：Next.js 15（App Router）、TypeScript、React
@@ -148,7 +148,7 @@ npx playwright test
 
 ---
 
-## Deployment Workflow
+## Deployment 工作流
 
 ### Pre-Deployment Checklist
 
@@ -190,7 +190,7 @@ CLAUDE_API_KEY=
 
 ---
 
-## Related Skills
+## Related 技能
 
 - `coding-standards`
 - `frontend-patterns`

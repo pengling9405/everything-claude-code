@@ -48,7 +48,7 @@ export function Tabs({ children, defaultTab }: Props) {
 - Menu
 - Dialog 组合部件
 
-### Render Props Pattern
+### Render Props 模式
 
 当需要把“数据获取逻辑”和“展示逻辑”解耦时可以使用，但在现代 React 中通常优先考虑 custom hooks。
 
@@ -74,7 +74,7 @@ export function Tabs({ children, defaultTab }: Props) {
 
 ## State Management Patterns
 
-### Context + Reducer Pattern
+### 背景 + Reducer 模式
 
 适合：
 - 中等复杂度共享状态
@@ -119,7 +119,7 @@ export function Tabs({ children, defaultTab }: Props) {
 - 提交状态
 - 服务端错误回显
 
-## Error Boundary Pattern
+## 错误 Boundary 模式
 
 错误边界适合：
 - 页面级隔离

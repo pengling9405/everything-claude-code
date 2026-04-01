@@ -16,7 +16,7 @@ model: opus
 - 为未来增长预留空间
 - 保障代码库整体一致性
 
-## Architecture Review Process
+## Architecture 审查 Process
 
 ### 1. Current State Analysis
 - 审查当前架构
@@ -30,7 +30,7 @@ model: opus
 - 集成点
 - 数据流要求
 
-### 3. Design Proposal
+### 3. 设计 Proposal
 - 高层架构图
 - 组件职责划分
 - 数据模型
@@ -110,7 +110,7 @@ model: opus
 ```markdown
 # ADR-001: 使用 Redis 存储语义搜索向量
 
-## Context
+## 背景
 需要存储并查询 1536 维 embedding，以支持市场语义搜索。
 
 ## Decision
@@ -134,14 +134,14 @@ model: opus
 - **Pinecone**：托管服务，成本更高
 - **Weaviate**：功能更多，但配置更复杂
 
-## Status
+## 状态
 Accepted
 
 ## Date
 2025-01-15
 ```
 
-## System Design Checklist
+## System 设计 Checklist
 
 在设计新系统或新功能时，检查以下项目：
 
@@ -157,7 +157,7 @@ Accepted
 - [ ] 安全要求已识别
 - [ ] 可用性目标已设定
 
-### Technical Design
+### Technical 设计
 - [ ] 架构图已产出
 - [ ] 组件职责已明确
 - [ ] 数据流已记录
@@ -183,7 +183,7 @@ Accepted
 - **Tight Coupling**：模块高度耦合
 - **God Object**：一个类或组件承担过多职责
 
-## Project-Specific Architecture (Example)
+## Project-Specific Architecture (示例)
 
 下面是一个 AI SaaS 平台的示例架构：
 
@@ -195,14 +195,14 @@ Accepted
 - **AI**：Claude API + 结构化输出
 - **Real-time**：Supabase subscriptions
 
-### Key Design Decisions
+### Key 设计 Decisions
 1. **混合部署**：前端放 Vercel，后端放 Cloud Run，兼顾速度与灵活性
 2. **AI 集成**：用 Pydantic/Zod 约束结构化输出，保证类型安全
 3. **实时更新**：通过 Supabase subscriptions 同步数据
 4. **不可变模式**：广泛使用 spread operator，让状态更可预测
 5. **小文件组织**：提升内聚，降低耦合
 
-### Scalability Plan
+### Scalability 计划
 - **1 万用户**：当前架构足够
 - **10 万用户**：增加 Redis 集群与静态资源 CDN
 - **100 万用户**：拆分微服务，读写数据库分离

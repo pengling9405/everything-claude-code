@@ -47,7 +47,7 @@
 ## Solution
 [模式 / 技术 / workaround]
 
-## Example
+## 示例
 [如果适用，提供代码示例]
 
 ## When to Use

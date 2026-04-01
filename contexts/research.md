@@ -1,4 +1,4 @@
-# Research Context
+# Research 背景
 
 模式：探索、调查、学习  
 重点：先理解，再行动

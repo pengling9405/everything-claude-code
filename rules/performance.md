@@ -30,7 +30,7 @@
 - Documentation updates
 - Simple bug fixes
 
-## Ultrathink + Plan Mode
+## Ultrathink + 计划 模式
 
 对于需要深度推理的复杂任务：
 1. 用 `ultrathink` 增强思考深度

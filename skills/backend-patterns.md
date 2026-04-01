@@ -7,7 +7,7 @@ description: 面向 Node.js、Express 与 Next.js API routes 的后端架构模�
 
 适用于可扩展服务端应用的后端模式与实践集合。
 
-## API Design Patterns
+## API 设计 Patterns
 
 ### RESTful API Structure
 
@@ -29,7 +29,7 @@ GET /api/markets?status=active&sort=volume&limit=20&offset=0
 - 请求体承载输入，响应体承载结果
 - 错误码与错误结构保持一致
 
-### Repository Pattern
+### Repository 模式
 
 ```typescript
 interface MarketRepository {
@@ -46,7 +46,7 @@ interface MarketRepository {
 - 未来可能切换数据源
 - 测试中需要 mock 数据层
 
-### Service Layer Pattern
+### Service Layer 模式
 
 ```typescript
 class MarketService {
@@ -66,7 +66,7 @@ class MarketService {
 - 保持领域规则集中
 - 隔离控制器与数据层
 
-### Middleware Pattern
+### Middleware 模式
 
 ```typescript
 export function withAuth(handler: NextApiHandler): NextApiHandler {
@@ -113,7 +113,7 @@ const userIds = [...new Set(markets.map(m => m.userId))]
 const users = await db.users.findManyByIds(userIds)
 ```
 
-### Transaction Pattern
+### Transaction 模式
 
 ```typescript
 await db.transaction(async tx => {
@@ -139,7 +139,7 @@ await db.transaction(async tx => {
 - 聚合结果
 - 外部 API 响应
 
-### Cache-Aside Pattern
+### Cache-Aside 模式
 
 ```typescript
 async function getMarket(id: string) {
@@ -157,9 +157,9 @@ async function getMarket(id: string) {
 - 写入后要失效或回填缓存
 - 缓存失败时业务应可回退
 
-## Error Handling Patterns
+## 错误 Handling Patterns
 
-### Centralized Error Handler
+### Centralized 错误 Handler
 
 ```typescript
 export function handleApiError(error: unknown) {
@@ -215,7 +215,7 @@ function requireRole(user: User, role: Role) {
 
 ## Background Jobs & Queues
 
-### Simple Queue Pattern
+### Simple Queue 模式
 
 适用于：
 - 邮件发送

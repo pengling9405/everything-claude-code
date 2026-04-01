@@ -15,7 +15,7 @@ interface ApiResponse<T> {
 }
 ```
 
-## Custom Hooks Pattern
+## Custom Hooks 模式
 
 ```typescript
 export function useDebounce<T>(value: T, delay: number): T {
@@ -30,7 +30,7 @@ export function useDebounce<T>(value: T, delay: number): T {
 }
 ```
 
-## Repository Pattern
+## Repository 模式
 
 ```typescript
 interface Repository<T> {

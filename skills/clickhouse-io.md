@@ -7,7 +7,7 @@ description: 面向高性能分析场景的 ClickHouse 数据模式、查询优�
 
 适用于高吞吐分析场景的 ClickHouse 模式与实践。
 
-## Overview
+## 概览
 
 ClickHouse 是面向 OLAP 的列式数据库，适合：
 - 大规模分析查询
@@ -22,7 +22,7 @@ ClickHouse 是面向 OLAP 的列式数据库，适合：
 - 分布式查询
 - 适合追加写入
 
-## Table Design Patterns
+## Table 设计 Patterns
 
 ### MergeTree Engine (Most Common)
 
@@ -182,7 +182,7 @@ ORDER BY day DESC;
 
 ## Data Pipeline Patterns
 
-### ETL Pattern
+### ETL 模式
 
 流程通常为：
 1. 提取源数据
@@ -198,7 +198,7 @@ ORDER BY day DESC;
 
 ## Best Practices
 
-### 1. Partitioning Strategy
+### 1. Partitioning 策略
 - 用时间字段分区最常见
 - 分区不要过细，否则 part 太多
 

@@ -37,7 +37,7 @@ npx madge --image graph.svg src/
 npx jsdoc2md src/**/*.ts
 ```
 
-## Codemap Generation Workflow
+## Codemap Generation 工作流
 
 ### 1. Repository Structure Analysis
 ```text
@@ -93,7 +93,7 @@ docs/CODEMAPS/
 链接到其他相关 codemap
 ```
 
-## Documentation Update Workflow
+## Documentation Update 工作流
 
 ### 1. Extract Documentation from Code
 ```text
@@ -120,7 +120,7 @@ docs/CODEMAPS/
 - 代码片段尽量保持可编译
 ```
 
-## Example Project-Specific Codemaps
+## 示例 Project-Specific Codemaps
 
 ### Frontend Codemap (docs/CODEMAPS/frontend.md)
 ```markdown
@@ -201,7 +201,7 @@ Embedding、向量检索与回退搜索
 ### Development
 [本地开发命令]
 
-### Build
+### 构建
 [构建与发布命令]
 
 ## Architecture
@@ -233,7 +233,7 @@ Embedding、向量检索与回退搜索
 ```markdown
 ## Docs: Update Codemaps and Documentation
 
-### Summary
+### 摘要
 [本次更新摘要]
 
 ### Changes
@@ -249,7 +249,7 @@ Embedding、向量检索与回退搜索
 - [ ] 示例命令有效
 - [ ] 文档与代码一致
 
-### Impact
+### 影响
 [对读者与团队的影响]
 ```
 

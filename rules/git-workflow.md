@@ -1,4 +1,4 @@
-# Git Workflow
+# Git 工作流
 
 ## Commit Message 格式
 

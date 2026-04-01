@@ -1,9 +1,9 @@
 ---
 name: tdd-workflow
-description: 开发新功能、修复 bug 或做重构时使用。强制执行测试驱动开发，并要求单元、集成、E2E 综合覆盖达到 80%+。
+description: 开发新功能、修复 缺陷 或做重构时使用。强制执行测试驱动开发，并要求单元、集成、E2E 综合覆盖达到 80%+。
 ---
 
-# Test-Driven Development Workflow
+# 测试-Driven Development 工作流
 
 这个 skill 用来确保代码开发遵循 TDD 原则，并具备足够测试覆盖。
 
@@ -15,7 +15,7 @@ description: 开发新功能、修复 bug 或做重构时使用。强制执行�
 - 新增 API
 - 创建新组件
 
-## Core Principles
+## 核心原则
 
 ### 1. Tests BEFORE Code
 永远先写测试，再写实现。
@@ -26,7 +26,7 @@ description: 开发新功能、修复 bug 或做重构时使用。强制执行�
 - 覆盖错误场景
 - 覆盖边界值
 
-### 3. Test Types
+### 3. 测试 Types
 
 #### Unit Tests
 - 单个函数
@@ -43,14 +43,14 @@ description: 开发新功能、修复 bug 或做重构时使用。强制执行�
 - 完整工作流
 - 浏览器交互
 
-## TDD Workflow Steps
+## TDD 工作流 Steps
 
-### Step 1: Write User Journeys
+### 步骤 1: Write 用户 Journeys
 ```text
 As a [role], I want to [action], so that [benefit]
 ```
 
-### Step 2: Generate Test Cases
+### 步骤 2: Generate 测试 Cases
 
 ```typescript
 describe('Semantic Search', () => {
@@ -60,13 +60,13 @@ describe('Semantic Search', () => {
 })
 ```
 
-### Step 3: Run Tests (They Should Fail)
+### 步骤 3: Run Tests (They Should Fail)
 ```bash
 npm test
 # 测试此时应该失败
 ```
 
-### Step 4: Implement Code
+### 步骤 4: Implement Code
 ```typescript
 export async function searchMarkets(query: string) {
   // 根据测试实现最小代码
@@ -93,7 +93,7 @@ npm run test:coverage
 
 ## Testing Patterns
 
-### Unit Test Pattern (Jest/Vitest)
+### Unit 测试 模式 (Jest/Vitest)
 ```typescript
 describe('Button Component', () => {
   it('renders with correct text', () => {})
@@ -102,21 +102,21 @@ describe('Button Component', () => {
 })
 ```
 
-### API Integration Test Pattern
+### API Integration 测试 模式
 ```typescript
 describe('GET /api/markets', () => {
   it('returns markets successfully', async () => {})
 })
 ```
 
-### E2E Test Pattern (Playwright)
+### E2E 测试 模式 (Playwright)
 ```typescript
 test('user can search and view market', async ({ page }) => {
   await page.goto('/')
 })
 ```
 
-## Test File Organization
+## 测试 File Organization
 
 建议结构：
 ```text
@@ -140,9 +140,9 @@ tests/
 - 固定 embedding / completion 响应
 - 保证测试可重复
 
-## Test Coverage Verification
+## 测试 Coverage Verification
 
-### Run Coverage Report
+### Run Coverage 报告
 ```bash
 npm run test:coverage
 ```
@@ -155,10 +155,10 @@ npm run test:coverage
 
 ## Common Testing Mistakes to Avoid
 
-### ❌ WRONG: Testing Implementation Details
+### ❌ WRONG: Testing 实现 Details
 - 不要测试内部 state、私有方法、临时实现细节
 
-### ✅ CORRECT: Test User-Visible Behavior
+### ✅ CORRECT: 测试 用户-Visible Behavior
 - 测试用户可观察到的输出、状态与副作用
 
 ### ❌ WRONG: Brittle Selectors
@@ -167,7 +167,7 @@ npm run test:coverage
 ### ✅ CORRECT: Semantic Selectors
 - 优先 `role`、`label`、`data-testid`
 
-### ❌ WRONG: No Test Isolation
+### ❌ WRONG: No 测试 Isolation
 - 不要让测试相互依赖
 
 ### ✅ CORRECT: Independent Tests
@@ -175,7 +175,7 @@ npm run test:coverage
 
 ## Continuous Testing
 
-### Watch Mode During Development
+### Watch 模式 During Development
 ```bash
 npm test -- --watch
 ```

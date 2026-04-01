@@ -34,15 +34,15 @@ e2e-runner agent 会：
 5. **生成报告**并附带测试产物
 6. **识别 flaky tests** 并给出修复建议
 
-## Example Usage
+## 示例 Usage
 
 ```text
 User: /e2e Test the market search and view flow
 
 Agent (e2e-runner):
-# E2E Test Generation: Market Search and View Flow
+# E2E 测试 Generation: Market Search and View Flow
 
-## Test Scenario Identified
+## 测试 Scenario Identified
 
 **User Journey:** Market Search → View Results → Click Market → View Details
 
@@ -55,7 +55,7 @@ Agent (e2e-runner):
 6. 验证图表已渲染
 ```
 
-## Generated Test Code
+## Generated 测试 Code
 
 ```typescript
 // tests/e2e/markets/search-and-view.spec.ts
@@ -118,7 +118,7 @@ test.describe('Market Search and View Flow', () => {
 npx playwright test tests/e2e/markets/search-and-view.spec.ts
 ```
 
-## Test Report
+## 测试 报告
 
 ```text
 ╔══════════════════════════════════════════════════════════════╗
@@ -133,7 +133,7 @@ npx playwright test tests/e2e/markets/search-and-view.spec.ts
 ╚══════════════════════════════════════════════════════════════╝
 ```
 
-## Test Artifacts
+## 测试 Artifacts
 
 运行测试后会生成以下产物：
 
@@ -161,7 +161,7 @@ npx playwright show-trace artifacts/trace-abc123.zip
 open artifacts/search-results.png
 ```
 
-## Flaky Test Detection
+## Flaky 测试 Detection
 
 如果测试存在间歇性失败，应输出类似结果：
 

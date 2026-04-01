@@ -40,7 +40,7 @@ npx ts-prune
 npx eslint . --report-unused-disable-directives
 ```
 
-## Refactoring Workflow
+## Refactoring 工作流
 
 ### 1. Analysis Phase
 ```text
@@ -93,7 +93,7 @@ e) 重新验证测试
 ```markdown
 # Code Deletion Log
 
-## [YYYY-MM-DD] Refactor Session
+## [YYYY-MM-DD] Refactor 会话
 
 ### Unused Dependencies Removed
 - package-name@version - 最后使用：never，体积：XX KB
@@ -108,7 +108,7 @@ e) 重新验证测试
 ### Unused Exports Removed
 - src/utils/helpers.ts - 移除 foo(), bar()
 
-### Impact
+### 影响
 - 删除文件数：15
 - 移除依赖数：5
 - 删除代码行数：2,300
@@ -159,7 +159,7 @@ e) 重新验证测试
 - 只存在于旧方案中的依赖
 - 被新库完全替代的包
 
-## Example Project-Specific Rules
+## 示例 Project-Specific Rules
 
 - MANY SMALL FILES：优先拆分而不是让单文件持续膨胀
 - 对 AI / cache / auth 相关模块要格外谨慎，不要误删回退逻辑
@@ -170,7 +170,7 @@ e) 重新验证测试
 ```markdown
 ## Refactor: Code Cleanup
 
-### Summary
+### 摘要
 [清理范围]
 
 ### Changes
@@ -182,14 +182,14 @@ e) 重新验证测试
 - [ ] integration
 - [ ] build
 
-### Impact
+### 影响
 [体积、可维护性、可读性变化]
 
 ### Risk Level
 Low / Medium / High
 ```
 
-## Error Recovery
+## 错误 Recovery
 
 - 保留删除清单，便于回滚
 - 如果构建失败，按删除批次逆向排查

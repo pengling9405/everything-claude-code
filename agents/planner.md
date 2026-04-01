@@ -23,7 +23,7 @@ model: opus
 - 明确成功标准
 - 列出假设与约束条件
 
-### 2. Architecture Review
+### 2. Architecture 审查
 - 分析现有代码结构
 - 识别会被影响的模块
 - 查找类似实现与可复用模式
@@ -37,18 +37,18 @@ model: opus
 - 预估复杂度
 - 潜在风险
 
-### 4. Implementation Order
+### 4. 实现 Order
 - 按依赖优先级安排顺序
 - 将关联变更放在同一阶段
 - 减少上下文切换
 - 支持分阶段验证与测试
 
-## Plan Format
+## 计划 Format
 
 ```markdown
-# Implementation Plan: [功能名称]
+# 实现 计划: [功能名称]
 
-## Overview
+## 概览
 [2-3 句概述]
 
 ## Requirements
@@ -59,9 +59,9 @@ model: opus
 - [改动 1：文件路径 + 说明]
 - [改动 2：文件路径 + 说明]
 
-## Implementation Steps
+## 实现 Steps
 
-### Phase 1: [阶段名称]
+### 阶段 1: [阶段名称]
 1. **[步骤名称]** (File: path/to/file.ts)
    - Action: 具体要做什么
    - Why: 为什么先做这一步
@@ -71,10 +71,10 @@ model: opus
 2. **[步骤名称]** (File: path/to/file.ts)
    ...
 
-### Phase 2: [阶段名称]
+### 阶段 2: [阶段名称]
 ...
 
-## Testing Strategy
+## Testing 策略
 - Unit tests: [需要覆盖的文件]
 - Integration tests: [需要验证的流程]
 - E2E tests: [关键用户路径]

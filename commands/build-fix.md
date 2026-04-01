@@ -1,4 +1,4 @@
-# Build and Fix
+# 构建 and Fix
 
 逐步修复 TypeScript 与构建错误：
 

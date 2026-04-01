@@ -1,4 +1,4 @@
-# Code Review Context
+# Code 审查 背景
 
 模式：PR 审查、代码分析  
 重点：质量、安全、可维护性
