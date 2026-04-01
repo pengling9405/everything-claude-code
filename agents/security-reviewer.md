@@ -180,10 +180,10 @@ Solana / Blockchain Security:
 ### 10. Logging Sensitive Data (MEDIUM)
 - 日志输出 token、邮箱、证件号、支付详情
 
-## Security 审查 报告 Format
+## Security 审查报告 Format
 
 ```markdown
-# Security 审查 报告
+# Security 审查报告
 
 ## 摘要
 - 审查范围
